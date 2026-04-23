@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Math Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<h1>📚 Генератор задач</h1>
+
+<select id="level">
+  <option value="school">Школа</option>
+  <option value="university">Университет</option>
+</select>
+
+<select id="topic"></select>
+
+<button onclick="generateTasks()">Сгенерировать</button>
+
+<div id="tasks"></div>
+
+<script src="app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+</script>
+
+</body>
+</html>
