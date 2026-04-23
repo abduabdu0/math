@@ -1,33 +1,382 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Math Generator</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор задач</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0eef8; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 0 0 3rem; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #534AB7 0%, #3C3489 100%); padding: 1.75rem 1.25rem 2rem; border-radius: 0 0 28px 28px; color: white; margin-bottom: 1.5rem; }
+  .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .header p { font-size: 13px; opacity: 0.75; }
+
+  /* CARDS */
+  .card { background: white; border-radius: 16px; padding: 1.25rem; margin: 0 1rem 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .card-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+
+  /* TOGGLE */
+  .toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .toggle-btn { padding: 11px; border: 1.5px solid #e5e3f5; border-radius: 10px; background: #f8f7ff; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: #666; }
+  .toggle-btn.active { background: #534AB7; color: white; border-color: #534AB7; }
+
+  /* CHIPS */
+  .chips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .chip { padding: 9px 10px; border: 1.5px solid #e5e3f5; border-radius: 10px; background: #f8f7ff; font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: center; color: #555; }
+  .chip.active { background: #eeedfe; border-color: #534AB7; color: #3C3489; font-weight: 600; }
+  .chip:hover { border-color: #AFA9EC; }
+
+  /* TOPIC PILLS */
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill { padding: 7px 13px; border: 1.5px solid #e5e3f5; border-radius: 20px; background: #f8f7ff; font-size: 13px; cursor: pointer; transition: all 0.15s; color: #555; }
+  .pill.active { background: #534AB7; color: white; border-color: #534AB7; }
+
+  /* DIFFICULTY */
+  .diff-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+  .diff-btn { padding: 9px 6px; border: 1.5px solid #e5e3f5; border-radius: 10px; background: #f8f7ff; font-size: 13px; cursor: pointer; text-align: center; color: #555; transition: all 0.15s; font-weight: 500; }
+  .diff-btn.easy.active { background: #eaf3de; border-color: #639922; color: #3B6D11; }
+  .diff-btn.medium.active { background: #faeeda; border-color: #BA7517; color: #854F0B; }
+  .diff-btn.hard.active { background: #fcebeb; border-color: #E24B4A; color: #A32D2D; }
+
+  /* COUNTER */
+  .counter-row { display: flex; align-items: center; gap: 14px; }
+  .counter-btn { width: 38px; height: 38px; border: 1.5px solid #e5e3f5; border-radius: 10px; background: #f8f7ff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #534AB7; font-weight: 600; flex-shrink: 0; transition: all 0.15s; }
+  .counter-btn:hover { background: #eeedfe; border-color: #534AB7; }
+  .counter-val { font-size: 26px; font-weight: 700; color: #534AB7; min-width: 32px; text-align: center; }
+  .counter-desc { font-size: 13px; color: #888; }
+
+  /* GENERATE BUTTON */
+  .gen-btn { display: block; width: calc(100% - 2rem); margin: 0 1rem 1rem; padding: 15px; background: #534AB7; color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.15s; letter-spacing: 0.01em; }
+  .gen-btn:hover { background: #3C3489; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(83,74,183,0.3); }
+  .gen-btn:active { transform: translateY(0); }
+  .gen-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* RESULTS */
+  .results-header { display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; margin-bottom: 0.75rem; }
+  .results-title { font-size: 15px; font-weight: 600; color: #333; }
+  .copy-all-btn { font-size: 12px; padding: 6px 13px; border: 1.5px solid #e5e3f5; border-radius: 8px; background: white; cursor: pointer; color: #666; font-weight: 500; transition: all 0.15s; }
+  .copy-all-btn:hover { border-color: #534AB7; color: #534AB7; }
+
+  /* TASK CARD */
+  .task-card { background: white; border-radius: 16px; padding: 1.1rem 1.25rem; margin: 0 1rem 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .task-num { font-size: 11px; font-weight: 700; color: #534AB7; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .task-text { font-size: 14px; line-height: 1.65; color: #222; margin-bottom: 12px; }
+  .sol-toggle { background: none; border: none; padding: 0; font-size: 13px; color: #534AB7; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500; }
+  .sol-box { background: #f8f7ff; border-radius: 10px; padding: 12px 14px; margin-top: 10px; font-size: 13px; line-height: 1.75; color: #333; display: none; border-left: 3px solid #534AB7; }
+  .sol-box.open { display: block; }
+
+  /* LOADING */
+  .loading-card { background: white; border-radius: 16px; padding: 1.25rem; margin: 0 1rem 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; align-items: center; gap: 14px; }
+  .spinner { width: 22px; height: 22px; border: 2.5px solid #eeedfe; border-top-color: #534AB7; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-txt { font-size: 13px; color: #999; }
+
+  /* ERROR */
+  .error-box { background: #fcebeb; border: 1.5px solid #f09595; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #A32D2D; margin: 0 1rem 1rem; display: none; }
+
+  /* BADGE */
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+  .badge-easy { background: #eaf3de; color: #3B6D11; }
+  .badge-medium { background: #faeeda; color: #854F0B; }
+  .badge-hard { background: #fcebeb; color: #A32D2D; }
+
+  /* API KEY INFO */
+  .api-notice { background: #fff8e6; border: 1.5px solid #FAC775; border-radius: 12px; padding: 12px 14px; font-size: 12px; color: #854F0B; margin: 0 1rem 1rem; line-height: 1.6; }
+  .api-notice strong { font-weight: 600; }
+  .api-key-row { display: flex; gap: 8px; margin-top: 8px; }
+  .api-key-input { flex: 1; padding: 8px 10px; border: 1.5px solid #e5e3f5; border-radius: 8px; font-size: 12px; color: #333; outline: none; }
+  .api-key-input:focus { border-color: #534AB7; }
+  .api-key-save { padding: 8px 14px; background: #534AB7; color: white; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; }
+</style>
 </head>
 <body>
+<div class="app">
 
-<h1>📚 Генератор задач</h1>
+  <div class="header">
+    <h1>📐 Генератор задач</h1>
+    <p>ИИ создаёт индивидуальные задачи с решениями</p>
+  </div>
 
-<select id="level">
-  <option value="school">Школа</option>
-  <option value="university">Университет</option>
-</select>
+  <!-- API KEY NOTICE -->
+  <div class="api-notice" id="api-notice">
+    <strong>Введите ваш Anthropic API ключ</strong><br>
+    Получить бесплатно: <a href="https://console.anthropic.com" target="_blank" style="color:#534AB7">console.anthropic.com</a>
+    <div class="api-key-row">
+      <input class="api-key-input" type="password" id="api-key-input" placeholder="sk-ant-..." />
+      <button class="api-key-save" onclick="saveKey()">Сохранить</button>
+    </div>
+  </div>
 
-<select id="topic"></select>
+  <!-- LEVEL -->
+  <div class="card">
+    <div class="card-label">Уровень образования</div>
+    <div class="toggle-row">
+      <button class="toggle-btn active" onclick="setLevel('school',this)">🏫 Школа</button>
+      <button class="toggle-btn" onclick="setLevel('uni',this)">🎓 Университет</button>
+    </div>
+  </div>
 
-<button onclick="generateTasks()">Сгенерировать</button>
+  <!-- GRADE -->
+  <div class="card">
+    <div class="card-label" id="grade-label">Класс</div>
+    <div class="chips-grid" id="grade-chips"></div>
+  </div>
 
-<div id="tasks"></div>
+  <!-- SECTION -->
+  <div class="card">
+    <div class="card-label">Раздел</div>
+    <div class="chips-grid" id="section-chips"></div>
+  </div>
 
-<script src="app.js"></script>
+  <!-- TOPIC -->
+  <div class="card" id="topic-card">
+    <div class="card-label">Тема</div>
+    <div class="pills" id="topic-pills"></div>
+  </div>
+
+  <!-- DIFFICULTY -->
+  <div class="card">
+    <div class="card-label">Сложность</div>
+    <div class="diff-row">
+      <button class="diff-btn easy active" onclick="setDiff('easy',this)">🟢 Лёгкий</button>
+      <button class="diff-btn medium" onclick="setDiff('medium',this)">🟡 Средний</button>
+      <button class="diff-btn hard" onclick="setDiff('hard',this)">🔴 Сложный</button>
+    </div>
+  </div>
+
+  <!-- COUNT -->
+  <div class="card">
+    <div class="card-label">Количество задач</div>
+    <div class="counter-row">
+      <button class="counter-btn" onclick="changeCount(-1)">−</button>
+      <span class="counter-val" id="count-val">5</span>
+      <button class="counter-btn" onclick="changeCount(1)">+</button>
+      <span class="counter-desc">задач</span>
+    </div>
+  </div>
+
+  <div class="error-box" id="error-box"></div>
+
+  <button class="gen-btn" id="gen-btn" onclick="generate()">✨ Сгенерировать задачи</button>
+
+  <div id="results-area"></div>
+
+</div>
 
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
-</script>
+const SCHOOL_DATA = {
+  '5 класс': { sections: ['Числа и арифметика','Геометрия','Уравнения','Задачи'], topics: { 'Числа и арифметика': ['Дроби','Проценты','Натуральные числа','Делители и кратные'], 'Геометрия': ['Периметр и площадь','Углы','Прямоугольник','Треугольник'], 'Уравнения': ['Простые уравнения','Неравенства'], 'Задачи': ['Задачи на движение','Задачи на работу','Задачи на смеси'] } },
+  '6 класс': { sections: ['Дроби','Пропорции','Геометрия','Координаты'], topics: { 'Дроби': ['Обыкновенные дроби','Смешанные числа','Десятичные дроби'], 'Пропорции': ['Пропорция','Прямая пропорциональность','Обратная пропорциональность'], 'Геометрия': ['Площади фигур','Объём прямоугольника'], 'Координаты': ['Координатная плоскость','Симметрия'] } },
+  '7 класс': { sections: ['Алгебра','Геометрия','Линейные функции'], topics: { 'Алгебра': ['Одночлены','Многочлены','Степени'], 'Геометрия': ['Треугольники','Параллельные прямые','Окружность'], 'Линейные функции': ['График функции','Линейное уравнение'] } },
+  '8 класс': { sections: ['Квадратные уравнения','Геометрия','Дробные выражения'], topics: { 'Квадратные уравнения': ['Дискриминант','Теорема Виета','Неполные уравнения'], 'Геометрия': ['Подобие треугольников','Четырёхугольники','Теорема Пифагора'], 'Дробные выражения': ['Алгебраические дроби','Упрощение выражений'] } },
+  '9 класс': { sections: ['Функции','Прогрессии','Геометрия','Вероятность'], topics: { 'Функции': ['Квадратичная функция','Система уравнений'], 'Прогрессии': ['Арифметическая прогрессия','Геометрическая прогрессия'], 'Геометрия': ['Вписанные углы','Площади'], 'Вероятность': ['Комбинаторика','Вероятность события'] } },
+  '10 класс': { sections: ['Тригонометрия','Степени и логарифмы','Начала анализа'], topics: { 'Тригонометрия': ['Синус и косинус','Тангенс и котангенс','Тригонометрические уравнения'], 'Степени и логарифмы': ['Степень с дробным показателем','Корни n-й степени','Логарифмы'], 'Начала анализа': ['Предел функции','Производная'] } },
+  '11 класс': { sections: ['Производная','Интеграл','Уравнения','Стереометрия'], topics: { 'Производная': ['Правила дифференцирования','Экстремумы функции','Задачи на оптимизацию'], 'Интеграл': ['Первообразная','Определённый интеграл','Площадь фигуры'], 'Уравнения': ['Показательные уравнения','Логарифмические уравнения'], 'Стереометрия': ['Многогранники','Тела вращения','Объёмы'] } }
+};
 
+const UNI_DATA = {
+  '1 курс': { sections: ['Математический анализ','Линейная алгебра','Аналитическая геометрия'], topics: { 'Математический анализ': ['Пределы последовательностей','Производные','Интегралы'], 'Линейная алгебра': ['Матрицы','Определители','СЛУ методом Гаусса'], 'Аналитическая геометрия': ['Прямые и плоскости','Кривые второго порядка'] } },
+  '2 курс': { sections: ['Диффуравнения','Теория вероятностей','Кратные интегралы'], topics: { 'Диффуравнения': ['ОДУ первого порядка','ОДУ высших порядков','Системы ОДУ'], 'Теория вероятностей': ['Случайные события','Случайные величины','ЦПТ'], 'Кратные интегралы': ['Двойные интегралы','Тройные интегралы'] } },
+  '3 курс': { sections: ['Комплексный анализ','Ряды','Функции нескольких переменных'], topics: { 'Комплексный анализ': ['Комплексные числа','Аналитические функции'], 'Ряды': ['Числовые ряды','Ряды Фурье'], 'Функции нескольких переменных': ['Частные производные','Экстремумы'] } },
+  '4 курс': { sections: ['Функциональный анализ','Топология','Матфизика'], topics: { 'Функциональный анализ': ['Банаховы пространства','Линейные операторы'], 'Топология': ['Метрические пространства','Непрерывность'], 'Матфизика': ['УЧП','Краевые задачи'] } }
+};
+
+let state = { level: 'school', grade: '5 класс', section: null, topic: null, difficulty: 'easy', count: 5 };
+let apiKey = localStorage.getItem('math_api_key') || '';
+
+function init() {
+  if (apiKey) { document.getElementById('api-notice').style.display = 'none'; document.getElementById('api-key-input').value = apiKey; }
+  renderGrades(); renderSections(); renderTopics();
+}
+
+function saveKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) return;
+  apiKey = val;
+  localStorage.setItem('math_api_key', val);
+  document.getElementById('api-notice').style.display = 'none';
+}
+
+function getData() { return state.level === 'school' ? SCHOOL_DATA : UNI_DATA; }
+
+function setLevel(level, btn) {
+  state.level = level; state.grade = level === 'school' ? '5 класс' : '1 курс'; state.section = null; state.topic = null;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+  document.getElementById('grade-label').textContent = level === 'school' ? 'Класс' : 'Курс';
+  renderGrades(); renderSections(); renderTopics();
+}
+
+function setDiff(d, btn) {
+  state.difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+}
+
+function changeCount(d) { state.count = Math.max(1, Math.min(15, state.count + d)); document.getElementById('count-val').textContent = state.count; }
+
+function renderGrades() {
+  const grades = Object.keys(getData());
+  document.getElementById('grade-chips').innerHTML = grades.map(g =>
+    `<button class="chip${g===state.grade?' active':''}" onclick="selectGrade('${g}',this)">${g}</button>`
+  ).join('');
+}
+
+function selectGrade(g, btn) {
+  state.grade = g; state.section = null; state.topic = null;
+  document.querySelectorAll('#grade-chips .chip').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+  renderSections(); renderTopics();
+}
+
+function renderSections() {
+  const d = getData()[state.grade];
+  if (!d) return;
+  document.getElementById('section-chips').innerHTML = d.sections.map(s =>
+    `<button class="chip${s===state.section?' active':''}" onclick="selectSection('${esc(s)}',this)">${s}</button>`
+  ).join('');
+}
+
+function selectSection(s, btn) {
+  state.section = s; state.topic = null;
+  document.querySelectorAll('#section-chips .chip').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+  renderTopics();
+}
+
+function renderTopics() {
+  const d = getData()[state.grade];
+  const card = document.getElementById('topic-card');
+  if (!d || !state.section || !d.topics[state.section]) { document.getElementById('topic-pills').innerHTML = ''; card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  document.getElementById('topic-pills').innerHTML = d.topics[state.section].map(t =>
+    `<button class="pill${t===state.topic?' active':''}" onclick="selectTopic('${esc(t)}',this)">${t}</button>`
+  ).join('');
+}
+
+function selectTopic(t, btn) {
+  state.topic = t;
+  document.querySelectorAll('#topic-pills .pill').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+}
+
+function esc(s) { return s.replace(/'/g, "\\'"); }
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+async function generate() {
+  if (!apiKey) { showError('Введите Anthropic API ключ выше'); document.getElementById('api-notice').style.display = 'block'; return; }
+  if (!state.section) { showError('Выберите раздел математики'); return; }
+
+  const topicStr = state.topic || state.section;
+  const levelStr = state.level === 'school' ? `школа, ${state.grade}` : `университет, ${state.grade}`;
+  const diffMap = { easy: 'лёгкий', medium: 'средний', hard: 'сложный' };
+
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('gen-btn').textContent = '⏳ Генерирую...';
+  document.getElementById('error-box').style.display = 'none';
+
+  document.getElementById('results-area').innerHTML = Array.from({length: state.count}, (_, i) => `
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-txt">Создаю задачу ${i + 1}...</div>
+    </div>
+  `).join('');
+
+  const prompt = `Ты опытный учитель математики. Сгенерируй ровно ${state.count} индивидуальных математических задач.
+
+Параметры:
+- Уровень: ${levelStr}
+- Тема: ${topicStr} (раздел: ${state.section})
+- Сложность: ${diffMap[state.difficulty]}
+
+Требования:
+1. Каждая задача уникальная, соответствует теме и уровню
+2. Конкретные числа, реалистичные условия
+3. Подробное пошаговое решение с пояснениями и финальным ответом
+
+Ответь ТОЛЬКО JSON без markdown:
+{"tasks":[{"question":"текст задачи","solution":"пошаговое решение\\nШаг 1: ...\\nШаг 2: ...\\nОтвет: ..."}]}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.content.map(i => i.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    renderResults(parsed.tasks, topicStr);
+  } catch (e) {
+    document.getElementById('results-area').innerHTML = '';
+    showError('Ошибка: ' + e.message);
+  }
+
+  document.getElementById('gen-btn').disabled = false;
+  document.getElementById('gen-btn').textContent = '✨ Сгенерировать задачи';
+}
+
+function renderResults(tasks, topic) {
+  const diffBadgeMap = { easy: 'badge-easy">Лёгкий', medium: 'badge-medium">Средний', hard: 'badge-hard">Сложный' };
+  window._allTasks = tasks;
+
+  document.getElementById('results-area').innerHTML = `
+    <div class="results-header">
+      <span class="results-title">${topic} <span class="badge ${diffBadgeMap[state.difficulty]}</span></span>
+      <button class="copy-all-btn" onclick="copyAll()">📋 Копировать всё</button>
+    </div>
+    ${tasks.map((t, i) => `
+      <div class="task-card">
+        <div class="task-num">Задача ${i + 1}</div>
+        <div class="task-text">${t.question}</div>
+        <button class="sol-toggle" onclick="toggleSol(${i},this)">
+          <span>▶</span> Показать решение
+        </button>
+        <div class="sol-box" id="sol-${i}">${t.solution.replace(/\n/g, '<br>')}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function toggleSol(i, btn) {
+  const box = document.getElementById('sol-' + i);
+  const open = box.classList.toggle('open');
+  btn.querySelector('span').textContent = open ? '▼' : '▶';
+  btn.innerHTML = btn.innerHTML.replace(/Показать|Скрыть/, open ? 'Скрыть' : 'Показать');
+}
+
+function copyAll() {
+  if (!window._allTasks) return;
+  const text = window._allTasks.map((t, i) => `Задача ${i + 1}\n${t.question}\n\nРешение:\n${t.solution}`).join('\n\n---\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-all-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ Скопировано!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+init();
+</script>
 </body>
 </html>
