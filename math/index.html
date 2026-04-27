@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МатГен — Генератор Задач</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0812;--s1:#110f1f;--s2:#181530;--s3:#201d3a;
+  --ac:#7c6ef7;--ac2:#a78bfa;--ac3:#c4b5fd;
+  --grn:#4ade80;--yel:#fbbf24;--red:#f87171;--blu:#60a5fa;
+  --tx:#f0eeff;--tx2:#a39dc8;--tx3:#5e587a;
+  --br:rgba(124,110,247,.12);--br2:rgba(124,110,247,.28);
+  --r:14px;--rsm:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Golos Text',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+/* background glow */
+body::before{content:'';position:fixed;top:-300px;left:-200px;width:700px;height:700px;
+  background:radial-gradient(circle,rgba(124,110,247,.10) 0%,transparent 65%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;bottom:-300px;right:-200px;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(167,139,250,.07) 0%,transparent 65%);pointer-events:none;z-index:0}
+
+.app{max-width:520px;margin:0 auto;padding:0 0 4rem;position:relative;z-index:1}
+
+/* HEADER */
+.hdr{padding:2rem 1.25rem 1.25rem;text-align:center}
+.hdr-icon{font-size:2.8rem;display:block;margin-bottom:.75rem;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.hdr h1{font-family:'Unbounded',sans-serif;font-size:clamp(18px,5vw,24px);font-weight:900;
+  background:linear-gradient(130deg,#c4b5fd 0%,#7c6ef7 50%,#a78bfa 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:.4rem;line-height:1.2}
+.hdr p{font-size:13px;color:var(--tx2)}
+
+/* STAT ROW */
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 1rem;margin-bottom:1rem}
+.st{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:12px 8px;text-align:center}
+.st-n{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700;color:var(--ac2);display:block}
+.st-l{font-size:11px;color:var(--tx3);margin-top:2px}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);
+  padding:1.2rem;margin:0 1rem .875rem;transition:border-color .2s}
+.card:hover{border-color:var(--br2)}
+.clbl{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:600;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:.875rem}
+
+/* TOGGLE */
+.tgl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tgl{padding:12px;border:1px solid var(--br2);border-radius:var(--rsm);background:var(--s2);
+  font-family:'Golos Text',sans-serif;font-size:14px;font-weight:500;cursor:pointer;
+  transition:all .18s;color:var(--tx2)}
+.tgl:hover{border-color:var(--ac);color:var(--tx)}
+.tgl.on{background:linear-gradient(135deg,rgba(124,110,247,.22),rgba(167,139,250,.12));
+  border-color:var(--ac);color:var(--ac3);box-shadow:0 0 18px rgba(124,110,247,.18)}
+
+/* CHIP GRID */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chip{padding:9px 8px;border:1px solid var(--br);border-radius:var(--rsm);background:var(--s2);
+  font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer;transition:all .16s;
+  text-align:center;color:var(--tx2)}
+.chip:hover{border-color:var(--ac);color:var(--tx)}
+.chip.on{background:rgba(124,110,247,.18);border-color:var(--ac);color:var(--ac3);font-weight:600}
+
+/* PILLS */
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{padding:7px 13px;border:1px solid var(--br);border-radius:20px;background:var(--s2);
+  font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer;transition:all .16s;color:var(--tx2)}
+.pill:hover{border-color:var(--ac);color:var(--tx)}
+.pill.on{background:var(--ac);border-color:var(--ac);color:#fff}
+
+/* DIFFICULTY */
+.dfrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.df{padding:10px 4px;border:1px solid var(--br);border-radius:var(--rsm);background:var(--s2);
+  font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer;
+  text-align:center;color:var(--tx2);transition:all .16s;font-weight:500}
+.df.easy.on{background:rgba(74,222,128,.13);border-color:var(--grn);color:var(--grn)}
+.df.med.on{background:rgba(251,191,36,.13);border-color:var(--yel);color:var(--yel)}
+.df.hard.on{background:rgba(248,113,113,.13);border-color:var(--red);color:var(--red)}
+
+/* COUNTER */
+.ctr{display:flex;align-items:center;gap:16px}
+.cb{width:42px;height:42px;border:1px solid var(--br2);border-radius:var(--rsm);background:var(--s2);
+  font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--ac);font-weight:700;flex-shrink:0;transition:all .14s;font-family:'Unbounded',sans-serif}
+.cb:hover{background:rgba(124,110,247,.18);border-color:var(--ac)}
+.cv{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;color:var(--ac2);
+  min-width:36px;text-align:center}
+.cdesc{font-size:13px;color:var(--tx3)}
+
+/* GEN BUTTON */
+.gbtn{display:block;width:calc(100% - 2rem);margin:0 1rem 1rem;padding:16px;
+  background:linear-gradient(135deg,#7c6ef7,#a78bfa);color:#fff;border:none;border-radius:var(--r);
+  font-family:'Unbounded',sans-serif;font-size:15px;font-weight:600;cursor:pointer;
+  transition:all .2s;letter-spacing:.02em;position:relative;overflow:hidden}
+.gbtn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .4s}
+.gbtn:hover::before{left:100%}
+.gbtn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,110,247,.38)}
+.gbtn:active{transform:translateY(0)}
+.gbtn:disabled{opacity:.48;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ERROR */
+.erbox{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);
+  border-radius:var(--rsm);padding:12px 14px;font-size:13px;color:var(--red);
+  margin:0 1rem .875rem;display:none}
+
+/* RESULTS HEADER */
+.rhdr{display:flex;align-items:center;justify-content:space-between;padding:0 1rem;margin:1.25rem 0 .75rem}
+.rtitle{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:600;color:var(--tx)}
+.arow{display:flex;gap:7px}
+.abtn{font-size:12px;padding:6px 11px;border:1px solid var(--br2);border-radius:8px;
+  background:var(--s2);cursor:pointer;color:var(--tx2);font-family:'Golos Text',sans-serif;transition:all .14s}
+.abtn:hover{border-color:var(--ac);color:var(--ac3)}
+
+/* TASK CARD */
+.tcard{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);
+  padding:1.1rem 1.2rem;margin:0 1rem 10px;transition:border-color .2s;
+  animation:slideIn .3s ease both}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.tcard:hover{border-color:var(--br2)}
+.thdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tnum{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:var(--ac);
+  text-transform:uppercase;letter-spacing:.08em}
+.tbadge{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700}
+.be{background:rgba(74,222,128,.13);color:var(--grn)}
+.bm{background:rgba(251,191,36,.13);color:var(--yel)}
+.bh{background:rgba(248,113,113,.13);color:var(--red)}
+.ttxt{font-size:14px;line-height:1.75;color:var(--tx);margin-bottom:12px}
+.stgl{background:none;border:1px solid var(--br2);padding:7px 14px;border-radius:8px;
+  font-size:12px;color:var(--ac2);cursor:pointer;display:flex;align-items:center;gap:5px;
+  font-weight:500;font-family:'Golos Text',sans-serif;transition:all .14s}
+.stgl:hover{border-color:var(--ac);background:rgba(124,110,247,.1)}
+.sbox{background:var(--s2);border-radius:var(--rsm);padding:14px 16px;margin-top:10px;
+  font-size:13px;line-height:1.85;color:var(--tx2);display:none;border-left:3px solid var(--ac)}
+.sbox.open{display:block;animation:fdIn .2s ease}
+@keyframes fdIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.sstep{margin-bottom:5px}
+.sans{margin-top:10px;padding-top:10px;border-top:1px solid var(--br);color:var(--ac3);font-weight:600}
+
+/* LOADER */
+.lcard{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);
+  padding:1.2rem;margin:0 1rem 10px;display:flex;align-items:center;gap:14px}
+.spin{width:24px;height:24px;border:2.5px solid var(--s3);border-top-color:var(--ac);
+  border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ltxt{font-size:13px;color:var(--tx3)}
+.lbar{height:3px;background:var(--s3);border-radius:2px;margin-top:8px;overflow:hidden;flex:1}
+.lbfill{height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));
+  border-radius:2px;animation:lb 1.4s ease-in-out infinite}
+@keyframes lb{0%{width:0;margin-left:0}50%{width:65%;margin-left:18%}100%{width:0;margin-left:100%}}
+
+@media print{
+  body{background:#fff;color:#000}
+  .hdr,.card,.stats,.gbtn,.erbox{display:none}
+  .tcard{border:1px solid #ccc;break-inside:avoid;margin:0 0 12px}
+  .sbox{display:block!important}
+  .stgl,.rhdr .arow{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <span class="hdr-icon">📐</span>
+  <h1>Генератор математических задач</h1>
+  <p>Тысячи уникальных задач с пошаговыми решениями — без интернета</p>
+</div>
+
+<div class="stats">
+  <div class="st"><span class="st-n" id="stTasks">0</span><span class="st-l">задач в базе</span></div>
+  <div class="st"><span class="st-n" id="stTopics">0</span><span class="st-l">тем</span></div>
+  <div class="st"><span class="st-n" id="stGen">0</span><span class="st-l">сгенерировано</span></div>
+</div>
+
+<div class="card">
+  <div class="clbl">Уровень образования</div>
+  <div class="tgl-row">
+    <button class="tgl on" onclick="setLvl('school',this)">🏫 Школа</button>
+    <button class="tgl" onclick="setLvl('uni',this)">🎓 Университет</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="clbl" id="gradeLbl">Класс</div>
+  <div class="cgrid" id="gradeChips"></div>
+</div>
+
+<div class="card">
+  <div class="clbl">Раздел математики</div>
+  <div class="cgrid" id="secChips"></div>
+</div>
+
+<div class="card" id="topicCard" style="display:none">
+  <div class="clbl">Тема</div>
+  <div class="pills" id="topicPills"></div>
+</div>
+
+<div class="card">
+  <div class="clbl">Сложность</div>
+  <div class="dfrow">
+    <button class="df easy on" onclick="setDiff('easy',this)">🟢 Лёгкий</button>
+    <button class="df med" onclick="setDiff('med',this)">🟡 Средний</button>
+    <button class="df hard" onclick="setDiff('hard',this)">🔴 Сложный</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="clbl">Количество задач</div>
+  <div class="ctr">
+    <button class="cb" onclick="chCnt(-1)">−</button>
+    <span class="cv" id="cntVal">5</span>
+    <button class="cb" onclick="chCnt(1)">+</button>
+    <span class="cdesc">задач будет создано</span>
+  </div>
+</div>
+
+<div class="erbox" id="erBox"></div>
+<button class="gbtn" id="genBtn" onclick="generate()">✨ Создать задачи</button>
+<div id="results"></div>
+
+</div>
+<script>
+// =============================================================
+//  УТИЛИТЫ
+// =============================================================
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const Rf=(a,b,d=2)=>parseFloat((Math.random()*(b-a)+a).toFixed(d));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const gcd=(a,b)=>b===0?a:gcd(b,a%b);
+const lcm=(a,b)=>a*b/gcd(a,b);
+const fr=(n,d)=>{const g=gcd(Math.abs(n),Math.abs(d));return d/g===1?`${n/g}`:`${n/g}/${d/g}`};
+const names=['Алёша','Маша','Коля','Аня','Вася','Лена','Дима','Оля','Петя','Катя'];
+const rN=()=>pick(names);
+const PRIMES=[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];
+const rP=()=>pick(PRIMES);
+const trips=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[6,8,10],[9,12,15]];
+const rTrip=()=>pick(trips);
+const s=v=>v>=0?`+ ${v}`:`- ${Math.abs(v)}`;
+const sp=v=>v>=0?`${v}`:`(${v})`;
+
+// =============================================================
+//  БАЗА ЗАДАЧ — ГЕНЕРАТОРЫ
+// =============================================================
+const GEN={
+
+// ── ДРОБИ ────────────────────────────────────────────────────
+'Дроби':{
+easy:[
+()=>{
+  const d=R(2,9),n1=R(1,d-1),n2=R(1,d-1);
+  const sN=n1+n2,g=gcd(sN,d);
+  return{q:`Вычислите: <b>${n1}/${d} + ${n2}/${d}</b>`,
+    steps:[`Знаменатели одинаковы (${d}), складываем числители`,
+           `${n1}/${d} + ${n2}/${d} = ${sN}/${d}`,
+           g>1?`Сокращаем на ${g}: <b>${sN/g}/${d/g}</b>`:'Дробь несократима'],
+    ans:fr(sN,d)};
+},
+()=>{
+  const d=R(3,9),n1=R(2,d-1),n2=R(1,n1-1);
+  const dN=n1-n2,g=gcd(dN,d);
+  return{q:`Вычислите: <b>${n1}/${d} − ${n2}/${d}</b>`,
+    steps:[`Знаменатели равны, вычитаем числители`,
+           `${n1}/${d} − ${n2}/${d} = ${dN}/${d}`,
+           g>1?`Сокращаем: ${dN/g}/${d/g}`:'Несократима'],
+    ans:fr(dN,d)};
+},
+()=>{
+  const w=R(1,6),n=R(1,5),d=R(n+1,9);
+  const tot=w*d+n;
+  return{q:`Переведите в неправильную дробь: <b>${w} ${n}/${d}</b>`,
+    steps:[`Умножаем целую часть на знаменатель: ${w}×${d}=${w*d}`,
+           `Прибавляем числитель: ${w*d}+${n}=${tot}`,
+           `Знаменатель сохраняем: ${d}`],
+    ans:`${tot}/${d}`};
+},
+()=>{
+  const n=R(5,19),d=R(2,6);
+  const w=Math.floor(n/d),r=n%d;
+  return{q:`Переведите в смешанное число: <b>${n}/${d}</b>`,
+    steps:[`Делим ${n} на ${d}: ${n}÷${d}=${w} (остаток ${r})`,
+           r===0?`Число целое: ${w}`:`Записываем: ${w} ${r}/${d}`],
+    ans:r===0?`${w}`:`${w} ${r}/${d}`};
+}
+],
+medium:[
+()=>{
+  let d1=R(2,7),d2=R(2,7);while(d1===d2)d2=R(2,7);
+  const n1=R(1,d1-1),n2=R(1,d2-1),L=lcm(d1,d2);
+  const nn1=n1*(L/d1),nn2=n2*(L/d2),sN=nn1+nn2,g=gcd(sN,L);
+  return{q:`Вычислите: <b>${n1}/${d1} + ${n2}/${d2}</b>`,
+    steps:[`НОК(${d1},${d2})=${L}`,
+           `${n1}/${d1}=${nn1}/${L}, ${n2}/${d2}=${nn2}/${L}`,
+           `Сумма: (${nn1}+${nn2})/${L}=${sN}/${L}`,
+           g>1?`Сокращаем: ${sN/g}/${L/g}`:'Ответ несократим'],
+    ans:fr(sN,L)};
+},
+()=>{
+  const n1=R(2,7),d1=R(3,8),n2=R(2,7),d2=R(3,8);
+  const pN=n1*n2,pD=d1*d2,g=gcd(pN,pD);
+  return{q:`Вычислите: <b>${n1}/${d1} × ${n2}/${d2}</b>`,
+    steps:[`Умножаем числители: ${n1}×${n2}=${pN}`,
+           `Умножаем знаменатели: ${d1}×${d2}=${pD}`,
+           g>1?`Сокращаем: ${pN/g}/${pD/g}`:'Несократима'],
+    ans:fr(pN,pD)};
+},
+()=>{
+  const n1=R(2,6),d1=R(3,8),n2=R(2,6),d2=R(3,8);
+  const rN=n1*d2,rD=d1*n2,g=gcd(rN,rD);
+  return{q:`Вычислите: <b>${n1}/${d1} ÷ ${n2}/${d2}</b>`,
+    steps:[`Деление — это умножение на перевёрнутую: ${n1}/${d1} × ${d2}/${n2}`,
+           `Числитель: ${n1}×${d2}=${rN}`,`Знаменатель: ${d1}×${n2}=${rD}`,
+           g>1?`Сокращаем: ${rN/g}/${rD/g}`:'Несократима'],
+    ans:fr(rN,rD)};
+}
+],
+hard:[
+()=>{
+  let d1=R(2,6),d2=R(2,6),d3=R(2,6);
+  while(d1===d2||d2===d3||d1===d3){d2=R(2,6);d3=R(2,6);}
+  const n1=R(1,d1-1),n2=R(1,d2-1),n3=R(1,d3-1);
+  const L=lcm(lcm(d1,d2),d3);
+  const a1=n1*(L/d1),a2=n2*(L/d2),a3=n3*(L/d3);
+  const res=a1+a2-a3,g=gcd(Math.abs(res),L);
+  return{q:`Вычислите: <b>${n1}/${d1} + ${n2}/${d2} − ${n3}/${d3}</b>`,
+    steps:[`Общий знаменатель НОК(${d1},${d2},${d3})=${L}`,
+           `${n1}/${d1}=${a1}/${L}, ${n2}/${d2}=${a2}/${L}, ${n3}/${d3}=${a3}/${L}`,
+           `(${a1}+${a2}−${a3})/${L}=${res}/${L}`,
+           g>1?`Сокращаем на ${g}: ${res/g}/${L/g}`:'Готово'],
+    ans:fr(res,L)};
+},
+()=>{
+  const w1=R(1,4),n1=R(1,4),d1=R(n1+1,8);
+  const w2=R(1,4),n2=R(1,4),d2=R(n2+1,8);
+  const L=lcm(d1,d2);
+  const tot1=w1*d1+n1,tot2=w2*d2+n2;
+  const sumN=tot1*(L/d1)+tot2*(L/d2);
+  const wRes=Math.floor(sumN/L),rRes=sumN%L;
+  const g=gcd(rRes,L);
+  return{q:`Вычислите: <b>${w1} ${n1}/${d1} + ${w2} ${n2}/${d2}</b>`,
+    steps:[`Переводим: ${w1} ${n1}/${d1}=${tot1}/${d1}, ${w2} ${n2}/${d2}=${tot2}/${d2}`,
+           `НОК(${d1},${d2})=${L}`,
+           `${tot1*(L/d1)}/${L}+${tot2*(L/d2)}/${L}=${sumN}/${L}`,
+           `Переводим: ${wRes} ${fr(rRes,L)}`],
+    ans:rRes===0?`${wRes}`:`${wRes} ${fr(rRes,L)}`};
+}
+]},
+
+// ── ПРОЦЕНТЫ ─────────────────────────────────────────────────
+'Проценты':{
+easy:[
+()=>{
+  const tot=R(10,50)*20,pct=pick([10,20,25,50]);
+  return{q:`Найдите <b>${pct}%</b> от числа <b>${tot}</b>`,
+    steps:[`${tot}×${pct}/100=${tot*pct/100}`],ans:`${tot*pct/100}`};
+},
+()=>{
+  const part=R(2,18)*5,tot=R(5,20)*20;
+  const pct=Math.round(part/tot*100);
+  return{q:`Чему равно <b>${part}</b> от <b>${tot}</b> в процентах?`,
+    steps:[`${part}÷${tot}=${(part/tot).toFixed(4)}`,
+           `×100=${pct}%`],ans:`${pct}%`};
+},
+()=>{
+  const pct=pick([10,20,25,50]),part=R(5,30)*pct/100*20;
+  const tot=part*100/pct;
+  return{q:`<b>${pct}%</b> числа равно <b>${part}</b>. Найдите число.`,
+    steps:[`1% = ${part}/${pct}=${part/pct}`,
+           `100% = ${part/pct}×100=${tot}`],ans:`${tot}`};
+}
+],
+medium:[
+()=>{
+  const price=R(5,25)*100,disc=pick([10,15,20,25,30]);
+  const save=price*disc/100,fin=price-save;
+  return{q:`Товар стоит <b>${price} руб.</b>, скидка <b>${disc}%</b>. Цена со скидкой?`,
+    steps:[`Скидка: ${price}×${disc}/100=${save} руб.`,
+           `Цена: ${price}−${save}=${fin} руб.`],ans:`${fin} руб.`};
+},
+()=>{
+  const sal=R(30,80)*1000,r1=pick([5,10,15,20]),r2=pick([5,8,10,12]);
+  const a1=Math.round(sal*(1+r1/100)),a2=Math.round(a1*(1+r2/100));
+  const tot=((a2-sal)/sal*100).toFixed(1);
+  return{q:`Зарплата <b>${sal} руб.</b> повышена на ${r1}%, затем ещё на ${r2}%. Итог?`,
+    steps:[`После 1-го: ${sal}×${1+r1/100}=${a1} руб.`,
+           `После 2-го: ${a1}×${1+r2/100}≈${a2} руб.`,
+           `Суммарный рост: ${tot}%`],ans:`${a2} руб. (+${tot}%)`};
+},
+()=>{
+  const a=R(10,40)*100,b=R(10,40)*100;
+  const avg=Math.round((a+b)/2),diff=Math.abs(a-b)/Math.min(a,b)*100;
+  return{q:`В классе ${rN()} набрал <b>${a} баллов</b>, а ${rN()} — <b>${b} баллов</b>. На сколько % отличаются результаты?`,
+    steps:[`Разница: ${Math.abs(a-b)} баллов`,
+           `% от меньшего: ${Math.abs(a-b)}/${Math.min(a,b)}×100=${diff.toFixed(1)}%`],
+    ans:`${diff.toFixed(1)}%`};
+}
+],
+hard:[
+()=>{
+  const p=R(5,25)*100,g=pick([10,15,20,25]);
+  const after=Math.round(p*(1+g/100));
+  const discPct=pick([5,10,15,20]);
+  const final=Math.round(after*(1-discPct/100));
+  const totalChange=((final-p)/p*100).toFixed(1);
+  return{q:`Цена товара <b>${p} руб.</b> выросла на <b>${g}%</b>, затем снизили на <b>${discPct}%</b>. Итоговое изменение?`,
+    steps:[`После роста: ${p}×${1+g/100}=${after} руб.`,
+           `После скидки: ${after}×${1-discPct/100}≈${final} руб.`,
+           `Изменение относительно исходной: ${totalChange}%`],
+    ans:`${final} руб. (${totalChange>0?'+':''}${totalChange}%)`};
+}
+]},
+
+// ── НАТУРАЛЬНЫЕ ЧИСЛА ────────────────────────────────────────
+'Натуральные числа':{
+easy:[
+()=>{const a=R(100,999),b=R(100,999);return{q:`<b>${a} + ${b}</b>`,steps:[`${a}+${b}=${a+b}`],ans:`${a+b}`}},
+()=>{const a=R(200,999),b=R(100,a-10);return{q:`<b>${a} − ${b}</b>`,steps:[`${a}−${b}=${a-b}`],ans:`${a-b}`}},
+()=>{const a=R(11,99),b=R(11,99);return{q:`<b>${a} × ${b}</b>`,
+  steps:[`${a}×${b}=${a}×${Math.floor(b/10)*10}+${a}×${b%10}`,
+         `=${a*Math.floor(b/10)*10}+${a*(b%10)}=${a*b}`],ans:`${a*b}`}}
+],
+medium:[
+()=>{
+  const b=R(11,30),q=R(10,99),r=R(0,b-1),a=b*q+r;
+  return{q:`<b>${a} ÷ ${b}</b> (с остатком)`,
+    steps:[`${b}×${q}=${b*q}`,`Остаток: ${a}−${b*q}=${r}`,
+           `${a}=${b}×${q}+${r}`],ans:`${q} ост. ${r}`};
+},
+()=>{
+  let n=R(50,150);
+  const orig=n,facs=[];
+  for(let i=2;i<=n;i++)while(n%i===0){facs.push(i);n/=i;}
+  return{q:`Разложите <b>${orig}</b> на простые множители`,
+    steps:[...facs.map((f,i,a)=>`÷${f}`),`${orig}=${facs.join('×')}`],
+    ans:facs.join('×')};
+},
+()=>{
+  const a=R(12,60),b=R(12,60);
+  const g=gcd(a,b),l=lcm(a,b);
+  return{q:`Найдите НОД и НОК чисел <b>${a}</b> и <b>${b}</b>`,
+    steps:[`Алгоритм Евклида: НОД(${a},${b})`,
+           `${a}=${Math.floor(a/b)}×${b}+${a%b}`,
+           a%b?`НОД(${b},${a%b})=${g}`:`НОД=${b}`,
+           `НОК=${a}×${b}/НОД=${a*b}/${g}=${l}`],
+    ans:`НОД=${g}, НОК=${l}`};
+}
+],
+hard:[
+()=>{
+  const n=R(100,300);
+  let divs=[1];
+  for(let i=2;i<=Math.sqrt(n);i++)if(n%i===0){divs.push(i);if(i!==n/i)divs.push(n/i);}
+  divs.push(n);divs.sort((a,b)=>a-b);
+  const sum=divs.reduce((a,b)=>a+b,0);
+  return{q:`Найдите сумму всех делителей числа <b>${n}</b>`,
+    steps:[`Делители ${n}: ${divs.join(', ')}`,
+           `Сумма: ${divs.join('+')}=${sum}`],ans:`${sum}`};
+},
+()=>{
+  const a=R(10,30),b=R(10,30),c=R(10,30);
+  const g=gcd(gcd(a,b),c);
+  return{q:`Найдите НОД(<b>${a}, ${b}, ${c}</b>)`,
+    steps:[`НОД(${a},${b})=${gcd(a,b)}`,
+           `НОД(${gcd(a,b)},${c})=${g}`],ans:`${g}`};
+}
+]},
+
+// ── ДВИЖЕНИЕ ─────────────────────────────────────────────────
+'Задачи на движение':{
+easy:[
+()=>{const v=R(40,120),t=R(2,6);return{q:`Велосипедист едет <b>${v} км/ч</b>. Расстояние за <b>${t} ч</b>?`,steps:[`S=v×t=${v}×${t}=${v*t} км`],ans:`${v*t} км`}},
+()=>{const s=R(100,600),t=R(2,6);return{q:`Авто проехало <b>${s} км</b> за <b>${t} ч</b>. Скорость?`,steps:[`v=S/t=${s}/${t}=${s/t} км/ч`],ans:`${s/t} км/ч`}},
+()=>{const v=R(40,100),s=R(100,500);return{q:`Скорость <b>${v} км/ч</b>, путь <b>${s} км</b>. Время?`,steps:[`t=S/v=${s}/${v}=${(s/v).toFixed(2)} ч`],ans:`${(s/v).toFixed(2)} ч`}}
+],
+medium:[
+()=>{
+  const v1=R(50,90),v2=R(40,80),t=R(2,5),tot=(v1+v2)*t;
+  return{q:`Навстречу выехали два авто: <b>${v1}</b> и <b>${v2}</b> км/ч. Через <b>${t}</b> ч встретились. Расстояние?`,
+    steps:[`Скорость сближения: ${v1}+${v2}=${v1+v2} км/ч`,`S=${v1+v2}×${t}=${tot} км`],ans:`${tot} км`};
+},
+()=>{
+  const v1=R(60,100),v2=R(20,55),t=R(2,5);
+  const s=(v1-v2)*t;
+  return{q:`Мотоциклист <b>${v1}</b> км/ч догоняет велосипедиста <b>${v2}</b> км/ч. Расстояние <b>${s}</b> км. Время?`,
+    steps:[`Скорость сближения: ${v1}−${v2}=${v1-v2} км/ч`,`t=${s}/${v1-v2}=${t} ч`],ans:`${t} ч`};
+},
+()=>{
+  const v=R(50,90),t1=R(1,3),rest=R(20,60),t2=R(1,3);
+  const s=v*(t1+t2),totT=t1+rest/60+t2;
+  return{q:`Авто ехало ${t1} ч со скоростью <b>${v} км/ч</b>, стояло <b>${rest} мин</b>, ехало ещё <b>${t2} ч</b>. Средняя скорость?`,
+    steps:[`Путь: ${v}×(${t1}+${t2})=${s} км`,
+           `Общее время: ${t1}+${rest}/60+${t2}=${totT.toFixed(3)} ч`,
+           `Vср=${s}/${totT.toFixed(3)}≈${(s/totT).toFixed(1)} км/ч`],
+    ans:`≈${(s/totT).toFixed(1)} км/ч`};
+}
+],
+hard:[
+()=>{
+  const v1=R(40,80),v2=R(40,80),d=R(200,500);
+  const tMeet=d/(v1+v2);
+  const x1=v1*tMeet,x2=v2*tMeet;
+  return{q:`Два города на расстоянии <b>${d} км</b>. Два поезда вышли навстречу: <b>${v1}</b> и <b>${v2}</b> км/ч. Где встретятся (от 1-го города)?`,
+    steps:[`Время до встречи: ${d}/(${v1}+${v2})=${tMeet.toFixed(2)} ч`,
+           `1-й проедет: ${v1}×${tMeet.toFixed(2)}=${x1.toFixed(1)} км`,
+           `2-й проедет: ${v2}×${tMeet.toFixed(2)}=${x2.toFixed(1)} км`,
+           `Проверка: ${x1.toFixed(1)}+${x2.toFixed(1)}≈${d} км ✓`],
+    ans:`${x1.toFixed(1)} км от 1-го города`};
+}
+]},
+
+// ── РАБОТА ───────────────────────────────────────────────────
+'Задачи на работу':{
+easy:[
+()=>{const d=R(4,15);return{q:`${rN()} выполнит работу за <b>${d}</b> дней. Часть за 1 день?`,steps:[`1÷${d}=1/${d} части за день`],ans:`1/${d}`}},
+()=>{const d=R(3,12),k=R(2,5);return{q:`Работник выполняет 1/${d} работы за день. Сколько дней на всё?`,steps:[`Если 1/${d} за день, то 1÷(1/${d})=${d} дней`],ans:`${d} дней`}}
+],
+medium:[
+()=>{
+  const d1=R(4,12),d2=R(4,12);
+  const L=lcm(d1,d2);
+  const r1=L/d1,r2=L/d2,tot=r1+r2;
+  const days=(L/tot).toFixed(2);
+  return{q:`1-й выполняет работу за <b>${d1}</b> дней, 2-й — за <b>${d2}</b>. Вместе?`,
+    steps:[`За день: 1-й — 1/${d1}, 2-й — 1/${d2}`,
+           `НОК(${d1},${d2})=${L}`,`Вместе за день: ${r1}/${L}+${r2}/${L}=${tot}/${L}`,
+           `Время: ${L}/${tot}≈${days} дней`],ans:`≈${days} дней`};
+},
+()=>{
+  const d1=R(6,15),d2=R(6,15),tw=R(2,4);
+  const done=tw*(1/d1+1/d2),rem=1-done,daysAlone=(rem/(1/d1)).toFixed(2);
+  return{q:`1-й — ${d1} дн., 2-й — ${d2} дн. Работали вместе ${tw} дня, потом 2-й ушёл. Сколько ещё 1-й?`,
+    steps:[`Вместе за ${tw} дня: ${tw}×(1/${d1}+1/${d2})=${done.toFixed(4)}`,
+           `Осталось: 1−${done.toFixed(4)}=${rem.toFixed(4)}`,
+           `1-й один: ${rem.toFixed(4)}÷(1/${d1})=${daysAlone} дн.`],
+    ans:`≈${daysAlone} дней`};
+}
+],
+hard:[
+()=>{
+  const d1=R(6,15),d2=R(6,15),d3=R(6,15);
+  const L=lcm(lcm(d1,d2),d3);
+  const r1=L/d1,r2=L/d2,r3=L/d3,tot=r1+r2+r3;
+  return{q:`Трое: 1-й — ${d1} дн., 2-й — ${d2} дн., 3-й — ${d3} дн. Вместе?`,
+    steps:[`Скорости: 1/${d1}, 1/${d2}, 1/${d3}`,
+           `НОК=${L}`,`За день: (${r1}+${r2}+${r3})/${L}=${tot}/${L}`,
+           `Время: ${L}/${tot}≈${(L/tot).toFixed(2)} дн.`],
+    ans:`≈${(L/tot).toFixed(2)} дней`};
+}
+]},
+
+// ── ГЕОМЕТРИЯ ────────────────────────────────────────────────
+'Периметр и площадь':{
+easy:[
+()=>{const a=R(3,15),b=R(3,15);return{q:`Прямоугольник <b>${a}×${b}</b> см. P и S?`,steps:[`P=2(${a}+${b})=${2*(a+b)} см`,`S=${a}×${b}=${a*b} см²`],ans:`P=${2*(a+b)} см, S=${a*b} см²`}},
+()=>{const a=R(3,14);return{q:`Квадрат со стороной <b>${a}</b> см. P и S?`,steps:[`P=4×${a}=${4*a} см`,`S=${a}²=${a*a} см²`],ans:`P=${4*a} см, S=${a*a} см²`}},
+()=>{const b=R(4,15),h=R(3,12);return{q:`Треугольник: основание <b>${b}</b>, высота <b>${h}</b>. S?`,steps:[`S=(b×h)/2=(${b}×${h})/2=${b*h}/2=${b*h/2} см²`],ans:`${b*h/2} см²`}}
+],
+medium:[
+()=>{const d1=R(4,16),d2=R(4,16);return{q:`Ромб с диагоналями <b>${d1}</b> и <b>${d2}</b> см. S?`,steps:[`S=(d₁×d₂)/2=(${d1}×${d2})/2=${d1*d2/2} см²`],ans:`${d1*d2/2} см²`}},
+()=>{
+  const R2=R(3,12);const perim=2*Math.PI*R2;
+  return{q:`Окружность радиуса <b>${R2}</b> см. Длина и площадь?`,
+    steps:[`C=2πr=2π×${R2}≈${(2*Math.PI*R2).toFixed(2)} см`,
+           `S=πr²=π×${R2}²≈${(Math.PI*R2*R2).toFixed(2)} см²`],
+    ans:`C≈${(2*Math.PI*R2).toFixed(2)} см, S≈${(Math.PI*R2*R2).toFixed(2)} см²`};
+},
+()=>{
+  const big=R(8,18),small=R(2,big-4);
+  return{q:`Квадрат <b>${big}м</b>. Внутри квадрат <b>${small}м</b>. Площадь между ними?`,
+    steps:[`S₁=${big}²=${big*big} м²`,`S₂=${small}²=${small*small} м²`,
+           `S=${big*big}−${small*small}=${big*big-small*small} м²`],
+    ans:`${big*big-small*small} м²`};
+}
+],
+hard:[
+()=>{
+  const a=R(5,14),b=R(5,14),h=R(3,10);
+  return{q:`Трапеция: основания <b>${a}</b> и <b>${b}</b>, высота <b>${h}</b>. S?`,
+    steps:[`S=(a+b)/2×h=(${a}+${b})/2×${h}`,`=${(a+b)/2}×${h}=${(a+b)/2*h} см²`],
+    ans:`${(a+b)/2*h} см²`};
+},
+()=>{
+  const [c1,c2,hy]=rTrip();const m=R(2,4);
+  return{q:`Прямоугольный треугольник с катетами <b>${c1*m}</b> и <b>${c2*m}</b>. Гипотенуза?`,
+    steps:[`c²=a²+b²=${(c1*m)**2}+${(c2*m)**2}=${(c1*m)**2+(c2*m)**2}`,
+           `c=√${(c1*m)**2+(c2*m)**2}=${hy*m}`],
+    ans:`${hy*m}`};
+}
+]},
+
+// ── ТЕОРЕМА ПИФАГОРА ─────────────────────────────────────────
+'Теорема Пифагора':{
+easy:[
+()=>{const [a,b,c]=rTrip();return{q:`Катеты <b>${a}</b> и <b>${b}</b>. Гипотенуза?`,steps:[`c²=${a}²+${b}²=${a*a+b*b}`,`c=√${a*a+b*b}=${c}`],ans:`${c}`}},
+()=>{const [a,b,c]=rTrip();return{q:`Гипотенуза <b>${c}</b>, катет <b>${a}</b>. Второй катет?`,steps:[`b²=${c}²−${a}²=${c*c-a*a}`,`b=√${c*c-a*a}=${b}`],ans:`${b}`}},
+()=>{const [a,b,c]=rTrip(),k=R(2,4);return{q:`Катеты <b>${a*k}</b> и <b>${b*k}</b>. Гипотенуза?`,steps:[`c²=${(a*k)**2}+${(b*k)**2}=${(a*k)**2+(b*k)**2}`,`c=${c*k}`],ans:`${c*k}`}}
+],
+medium:[
+()=>{const a=R(3,12),b=R(3,12);const c=Math.sqrt(a*a+b*b);return{q:`Катеты <b>${a}</b> и <b>${b}</b>. Гипотенуза (округлить)?`,steps:[`c=√(${a*a}+${b*b})=√${a*a+b*b}≈${c.toFixed(2)}`],ans:`≈${c.toFixed(2)}`}},
+()=>{
+  const a=R(4,12);const d=a*Math.sqrt(2);
+  return{q:`Квадрат со стороной <b>${a}</b>. Диагональ?`,
+    steps:[`Диагональ квадрата: d=a√2=${a}×√2≈${d.toFixed(2)}`],ans:`≈${d.toFixed(2)}`};
+},
+()=>{
+  const h=R(3,8),b=R(4,12);const hy=Math.sqrt(h*h+b*b);
+  return{q:`Прямоугольник <b>${b}×${h}</b>. Диагональ?`,
+    steps:[`d=√(${b}²+${h}²)=√${b*b+h*h}≈${hy.toFixed(2)}`],ans:`≈${hy.toFixed(2)}`};
+}
+],
+hard:[
+()=>{
+  const [a,b,c]=rTrip(),k=R(2,5);
+  return{q:`Прямоугольный треугольник, периметр <b>${(a+b+c)*k}</b>, гипотенуза <b>${c*k}</b>. Катеты?`,
+    steps:[`a+b=${(a+b+c)*k}−${c*k}=${(a+b)*k}`,
+           `a²+b²=${(c*k)**2}`,
+           `Решаем систему: a=${a*k}, b=${b*k}`],
+    ans:`${a*k} и ${b*k}`};
+},
+()=>{
+  const a=R(6,15);const r=a*Math.sqrt(3)/2;
+  return{q:`Правильный треугольник со стороной <b>${a}</b>. Высота?`,
+    steps:[`Высота правильного треугольника: h=a√3/2`,
+           `h=${a}×√3/2=${a}×0.866...≈${r.toFixed(2)}`],
+    ans:`≈${r.toFixed(2)}`};
+}
+]},
+
+// ── ОДНОЧЛЕНЫ ────────────────────────────────────────────────
+'Одночлены':{
+easy:[
+()=>{const a=R(2,9),n=R(2,5),b=R(2,9),m=R(2,5);return{q:`Упростите: <b>${a}x^${n} × ${b}x^${m}</b>`,steps:[`Коэффициенты: ${a}×${b}=${a*b}`,`Степени: x^(${n}+${m})=x^${n+m}`],ans:`${a*b}x^${n+m}`}},
+()=>{const a=R(2,9),n=R(3,7),b=R(2,a),m=R(1,n-1);return{q:`Упростите: <b>${a}x^${n} ÷ ${b}x^${m}</b>`,steps:[`${a}/${b}=${a/b}`,`x^(${n}-${m})=x^${n-m}`],ans:`${a/b}x^${n-m}`}}
+],
+medium:[
+()=>{const a=R(2,8),n=R(2,5);return{q:`Упростите: <b>(${a}x^${n})²</b>`,steps:[`Коэффициент: ${a}²=${a*a}`,`Степень: (x^${n})²=x^${2*n}`],ans:`${a*a}x^${2*n}`}},
+()=>{const a=R(2,6),b=R(2,6),n=R(2,4);return{q:`Раскройте: <b>(${a}x)^${n}</b>`,steps:[`${a}^${n}=${Math.pow(a,n)}`,`x^${n}`],ans:`${Math.pow(a,n)}x^${n}`}}
+],
+hard:[
+()=>{
+  const a=R(2,6),b=R(2,6),c=R(2,6);
+  const numC=a*b,denC=c,g=gcd(numC,denC);
+  return{q:`Упростите: <b>${a}a²b³ × ${b}a³b² ÷ (${c}a³b⁴)</b>`,
+    steps:[`Числитель: ${a*b}a⁵b⁵`,`Делим на ${c}a³b⁴`,
+           `Коэф: ${numC}/${denC}=${numC/g}/${denC/g}`,`Степени: a^2 b^1`],
+    ans:`${numC/g}/${denC/g} a²b`};
+}
+]},
+
+// ── МНОГОЧЛЕНЫ ────────────────────────────────────────────────
+'Многочлены':{
+easy:[
+()=>{const a=R(2,8),b=R(1,7);return{q:`Раскройте: <b>${a}(x + ${b})</b>`,steps:[`${a}×x=${a}x`,`${a}×${b}=${a*b}`],ans:`${a}x + ${a*b}`}},
+()=>{const a=R(1,6);return{q:`Примените формулу: <b>(x + ${a})²</b>`,steps:[`(a+b)²=a²+2ab+b²`,`x²+2×${a}×x+${a}²=x²+${2*a}x+${a*a}`],ans:`x² + ${2*a}x + ${a*a}`}},
+()=>{const a=R(1,6);return{q:`Примените формулу: <b>(x − ${a})(x + ${a})</b>`,steps:[`(a−b)(a+b)=a²−b²`,`x²−${a}²=x²−${a*a}`],ans:`x² − ${a*a}`}}
+],
+medium:[
+()=>{const a=R(1,6),b=R(1,6);return{q:`Раскройте: <b>(x + ${a})(x + ${b})</b>`,steps:[`x²+(${a}+${b})x+${a}×${b}`,`x²+${a+b}x+${a*b}`],ans:`x² + ${a+b}x + ${a*b}`}},
+()=>{const a=R(2,6),b=R(1,5);return{q:`Разложите: <b>x² + ${a+b}x + ${a*b}</b>`,steps:[`Ищем a,b: сумма=${a+b}, произведение=${a*b}`,`a=${a}, b=${b}`,`(x+${a})(x+${b})`],ans:`(x + ${a})(x + ${b})`}},
+()=>{const a=R(2,6);return{q:`Разложите: <b>x² − ${a*a}</b>`,steps:[`Разность квадратов: a²−b²=(a−b)(a+b)`,`x²−${a}²=(x−${a})(x+${a})`],ans:`(x − ${a})(x + ${a})`}}
+],
+hard:[
+()=>{
+  const p=R(2,8),q=R(2,8);
+  return{q:`Разложите на множители: <b>${p}x² + ${p*q+p}x + ${q+1}x + ${q}</b>`,
+    steps:[`Группируем: (${p}x²+${p*q}x)+(${p}x+${q})`,
+           `${p}x(x+${q})+(x+${q})x...`,
+           `Пробуем (${p}x+1)(x+${q})`,
+           `Проверка: ${p}x²+${p*q}x+x+${q}=√`],
+    ans:`(${p}x + 1)(x + ${q})`};
+}
+]},
+
+// ── ДИСКРИМИНАНТ ─────────────────────────────────────────────
+'Дискриминант':{
+easy:[
+()=>{
+  const x1=pick([-4,-3,-2,-1,1,2,3,4]),x2=pick([-4,-3,-2,-1,1,2,3,4]);
+  const B=-(x1+x2),C=x1*x2;
+  const D=(x1+x2)**2-4*x1*x2;
+  return{q:`Найдите дискриминант: <b>x² ${s(B)}x ${s(C)} = 0</b>`,
+    steps:[`a=1, b=${B}, c=${C}`,`D=b²−4ac=${B}²−4×${C}=${B*B}−${4*C}=${D}`,
+           D>0?'D>0 — два корня':D===0?'D=0 — один корень':'D<0 — нет корней'],
+    ans:`D = ${D}`};
+},
+()=>{
+  const x1=R(-5,5),x2=R(-5,5);
+  const B=-(x1+x2),C=x1*x2,D=(B**2-4*C);
+  return{q:`Решите: <b>x² ${s(B)}x ${s(C)} = 0</b>`,
+    steps:[`D=${B}²−4×${C}=${D}`,`√D=${Math.sqrt(D).toFixed(2)}`,
+           `x₁=(−${B}+${Math.sqrt(D).toFixed(2)})/2=${x1}`,
+           `x₂=(−${B}−${Math.sqrt(D).toFixed(2)})/2=${x2}`],
+    ans:`x₁=${x1}, x₂=${x2}`};
+}
+],
+medium:[
+()=>{
+  const a=R(2,5),x1=pick([-3,-2,-1,1,2,3]),x2=pick([-3,-2,-1,1,2,3]);
+  const B=-a*(x1+x2),C=a*x1*x2;
+  const D=B*B-4*a*C;
+  return{q:`Решите: <b>${a}x² ${s(B)}x ${s(C)} = 0</b>`,
+    steps:[`a=${a}, b=${B}, c=${C}`,`D=${B}²−4×${a}×${C}=${D}`,
+           `x₁,₂=(−${B}±√${D})/${2*a}`,
+           `x₁=${x1}, x₂=${x2}`],
+    ans:`x₁=${x1}, x₂=${x2}`};
+},
+()=>{
+  const x1=pick([-2,-1,1,2]);
+  const B=-2*x1,C=x1*x1;
+  return{q:`Решите: <b>x² ${s(B)}x ${s(C)} = 0</b> (один корень)`,
+    steps:[`D=${B}²−4×${C}=${B*B-4*C}=0`,`x=−b/(2a)=${-B}/2=${x1}`],
+    ans:`x = ${x1} (корень кратности 2)`};
+}
+],
+hard:[
+()=>{
+  const x1=Rf(-3,3,1),x2=Rf(-3,3,1);
+  const B=-(x1+x2),C=x1*x2;
+  return{q:`Решите: <b>x² ${s(parseFloat(B.toFixed(1)))}x ${s(parseFloat(C.toFixed(1)))} = 0</b>`,
+    steps:[`D=(${B.toFixed(1)})²−4×(${C.toFixed(1)})=${(B*B-4*C).toFixed(2)}`,
+           `x₁=(−(${B.toFixed(1)})+√${(B*B-4*C).toFixed(2)})/2`,
+           `x₁≈${x1.toFixed(2)}, x₂≈${x2.toFixed(2)}`],
+    ans:`x₁≈${x1.toFixed(2)}, x₂≈${x2.toFixed(2)}`};
+}
+]},
+
+// ── СИНУС И КОСИНУС ──────────────────────────────────────────
+'Синус и косинус':{
+easy:[
+()=>{
+  const tbl={0:{s:'0',c:'1'},30:{s:'½',c:'√3/2'},45:{s:'√2/2',c:'√2/2'},60:{s:'√3/2',c:'½'},90:{s:'1',c:'0'}};
+  const ang=pick([0,30,45,60,90]);const v=tbl[ang];
+  return{q:`Найдите <b>sin(${ang}°)</b> и <b>cos(${ang}°)</b>`,
+    steps:[`Из таблицы значений:`,`sin(${ang}°)=${v.s}`,`cos(${ang}°)=${v.c}`],
+    ans:`sin=${v.s}, cos=${v.c}`};
+},
+()=>{
+  return{q:`Докажите тождество: <b>sin²α + cos²α = 1</b>`,
+    steps:[`Это основное тригонометрическое тождество`,
+           `Следует из теоремы Пифагора для единичной окружности`,
+           `Для любого угла α: (sinα)²+(cosα)²=1`],
+    ans:`Тождество доказано ✓`};
+}
+],
+medium:[
+()=>{
+  const ang=pick([30,45,60,120,135,150]);
+  const rad=ang*Math.PI/180;
+  return{q:`Вычислите: <b>sin(${ang}°)×cos(${ang}°)</b>`,
+    steps:[`sin(${ang}°)≈${Math.sin(rad).toFixed(4)}`,
+           `cos(${ang}°)≈${Math.cos(rad).toFixed(4)}`,
+           `Произведение: ${(Math.sin(rad)*Math.cos(rad)).toFixed(4)}`,
+           `Можно через формулу: sin(2α)/2=sin(${2*ang}°)/2`],
+    ans:`≈${(Math.sin(rad)*Math.cos(rad)).toFixed(4)}`};
+},
+()=>{
+  return{q:`Упростите: <b>sin²(3α) + cos²(3α)</b>`,
+    steps:[`Применяем основное тождество с заменой α→3α`,
+           `sin²(3α)+cos²(3α)=1 для любого α`],
+    ans:`1`};
+}
+],
+hard:[
+()=>{
+  const a=R(2,5);
+  return{q:`Упростите: <b>(sinα + cosα)² − 1</b>`,
+    steps:[`(sinα+cosα)²=sin²α+2sinα cosα+cos²α`,
+           `=1+2sinα cosα`,`−1: 1+2sinα cosα−1=2sinα cosα`,
+           `=sin(2α)`],
+    ans:`sin(2α)`};
+}
+]},
+
+// ── ТРИГОНОМЕТРИЧЕСКИЕ УРАВНЕНИЯ ─────────────────────────────
+'Тригонометрические уравнения':{
+easy:[
+()=>{const v=pick(['0','1','−1','½','−½']);const m={'0':'πn','1':'π/2+2πn','−1':'−π/2+2πn','½':'π/6+2πn; 5π/6+2πn','−½':'−π/6+2πn; 7π/6+2πn'};return{q:`Решите: <b>sin(x) = ${v}</b>`,steps:[`arcsin(${v})`,`Общее решение: x=${m[v]}`],ans:m[v]}},
+()=>{const v=pick(['0','1','−1','½','−½']);const m={'0':'π/2+πn','1':'2πn','−1':'π+2πn','½':'π/3+2πn; −π/3+2πn','−½':'2π/3+2πn; 4π/3+2πn'};return{q:`Решите: <b>cos(x) = ${v}</b>`,steps:[`arccos(${v})`,`x=${m[v]}`],ans:m[v]}}
+],
+medium:[
+()=>{
+  return{q:`Решите уравнение: <b>2sin²(x) − 1 = 0</b>`,
+    steps:[`sin²(x)=1/2`,`sin(x)=±√(1/2)=±√2/2`,
+           `x=±π/4+πn, n∈ℤ`],ans:`x = ±π/4 + πn`};
+},
+()=>{
+  return{q:`Решите: <b>2cos²(x) − 3cos(x) + 1 = 0</b>`,
+    steps:[`Замена t=cos(x)`,`2t²−3t+1=0`,`D=9−8=1`,
+           `t₁=1, t₂=1/2`,`cos(x)=1: x=2πn`,
+           `cos(x)=1/2: x=±π/3+2πn`],
+    ans:`x=2πn  или  x=±π/3+2πn`};
+}
+],
+hard:[
+()=>{
+  return{q:`Решите: <b>sin(x)−cos(x)=1</b>`,
+    steps:[`√2 sin(x−π/4)=1`,`sin(x−π/4)=1/√2=√2/2`,
+           `x−π/4=π/4+2πn  или  x−π/4=3π/4+2πn`,
+           `x=π/2+2πn  или  x=π+2πn`],
+    ans:`x=π/2+2πn  или  x=π+2πn`};
+}
+]},
+
+// ── ПРОИЗВОДНАЯ ──────────────────────────────────────────────
+'Производная':{
+easy:[
+()=>{const a=R(2,9),n=R(2,6);return{q:`Найдите производную: <b>f(x)=${a}x^${n}</b>`,steps:[`(xⁿ)'=nxⁿ⁻¹`,`f'(x)=${a}×${n}×x^${n-1}=${a*n}x^${n-1}`],ans:`${a*n}x^${n-1}`}},
+()=>{const a=R(2,9),b=R(1,8),c=R(-10,10);return{q:`f(x)=<b>${a}x²${s(b)}x${s(c)}</b>. f'(x)?`,steps:[`(${a}x²)'=${2*a}x`,`(${s(b)}x)'=${b}`,`(${s(c)})'=0`],ans:`f'(x) = ${2*a}x ${s(b)}`}},
+()=>{return{q:`Найдите производную: <b>f(x) = sin(x) + cos(x)</b>`,steps:[`(sin x)'=cos x`,`(cos x)'=−sin x`],ans:`f'(x) = cos(x) − sin(x)`}}
+],
+medium:[
+()=>{const a=R(1,5),b=R(1,5),n=R(2,4);return{q:`f(x)=<b>(${a}x+${b})^${n}</b>. f'(x)?`,steps:[`Сложная функция: u=${a}x+${b}, u'=${a}`,`f'=(u^${n})'=${n}u^${n-1}×u'`,`=${n*a}(${a}x+${b})^${n-1}`],ans:`${n*a}(${a}x + ${b})^${n-1}`}},
+()=>{const a=R(1,5),b=R(1,6);return{q:`f(x)=<b>sin(${a}x+${b})</b>. f'(x)?`,steps:[`(sin u)'=cos u × u'`,`u=${a}x+${b}, u'=${a}`,`f'=${a}cos(${a}x+${b})`],ans:`${a}cos(${a}x + ${b})`}},
+()=>{const a=R(2,6),b=R(1,5);return{q:`f(x)=<b>${a}x × sin(x)</b>. f'(x)?`,steps:[`Правило произведения: (uv)'=u'v+uv'`,`u=${a}x, u'=${a}; v=sin x, v'=cos x`,`f'=${a}sin x + ${a}x cos x`],ans:`${a}sin(x) + ${a}x·cos(x)`}}
+],
+hard:[
+()=>{const a=R(1,4);return{q:`Найдите экстремумы: <b>f(x)=${a}x³−${3*a}x²+${a}</b>`,steps:[`f'(x)=${3*a}x²−${6*a}x=${3*a}x(x−2)`,`f'=0: x=0 и x=2`,`x=0: максимум, f(0)=${a}`,`x=2: минимум, f(2)=${a*8-12*a+a}`],ans:`max f(0)=${a}, min f(2)=${a*8-12*a+a}`}},
+()=>{return{q:`Найдите производную: <b>f(x) = ln(x) × eˣ</b>`,steps:[`Правило произведения`,`u=ln x, u'=1/x`,`v=eˣ, v'=eˣ`,`f'=eˣ/x + eˣ·ln(x)=eˣ(1/x + ln x)`],ans:`f'(x) = eˣ(1/x + ln x)`}}
+]},
+
+// ── ИНТЕГРАЛ ─────────────────────────────────────────────────
+'Интеграл':{
+easy:[
+()=>{const a=R(1,8),n=R(1,5);const g=gcd(a,n+1);return{q:`∫ <b>${a}x^${n} dx</b>`,steps:[`∫xⁿdx=xⁿ⁺¹/(n+1)+C`,`=${a}x^${n+1}/${n+1}+C`],ans:`${a/g}x^${n+1}/${(n+1)/g} + C`}},
+()=>{return{q:`∫ <b>(sin x + cos x) dx</b>`,steps:[`∫sin x dx=−cos x+C₁`,`∫cos x dx=sin x+C₂`],ans:`−cos(x) + sin(x) + C`}},
+()=>{const a=R(1,5);return{q:`∫ <b>${a}eˣ dx</b>`,steps:[`∫eˣdx=eˣ+C`,`=${a}eˣ+C`],ans:`${a}eˣ + C`}}
+],
+medium:[
+()=>{const a=R(1,4),b=R(1,5),n1=R(2,4),n2=R(1,3);return{q:`∫ <b>(${a}x^${n1} + ${b}x^${n2}) dx</b>`,steps:[`∫${a}x^${n1}dx=${a}x^${n1+1}/${n1+1}`,`∫${b}x^${n2}dx=${b}x^${n2+1}/${n2+1}`],ans:`${a}x^${n1+1}/${n1+1} + ${b}x^${n2+1}/${n2+1} + C`}},
+()=>{const a=R(1,5),b=R(1,5);return{q:`∫ <b>sin(${a}x+${b}) dx</b>`,steps:[`∫sin u du=−cos u+C`,`u=${a}x+${b}, du=${a}dx`,`=−cos(${a}x+${b})/${a}+C`],ans:`−cos(${a}x + ${b})/${a} + C`}}
+],
+hard:[
+()=>{
+  const a=R(1,4),b=R(1,4),x1=R(0,2),x2=x1+R(1,3);
+  const F=x=>a*x**3/3-b*x;
+  const res=F(x2)-F(x1);
+  return{q:`∫[<b>${x1}</b>→<b>${x2}</b>] (${a}x²−${b}) dx`,
+    steps:[`F(x)=${a}x³/3−${b}x`,
+           `F(${x2})=${F(x2).toFixed(3)}`,
+           `F(${x1})=${F(x1).toFixed(3)}`,
+           `Результат=${res.toFixed(3)}`],ans:`${res.toFixed(3)}`};
+}
+]},
+
+// ── ПРЕДЕЛЫ ──────────────────────────────────────────────────
+'Пределы':{
+easy:[
+()=>{const a=R(2,8);return{q:`lim(x→${a}) <b>(x²−${a*a})/(x−${a})</b>`,steps:[`0/0 — неопределённость`,`x²−${a*a}=(x−${a})(x+${a})`,`Сокращаем: lim(x+${a})=${2*a}`],ans:`${2*a}`}},
+()=>{return{q:`lim(x→∞) <b>(3x²+2x−1)/(5x²−4)</b>`,steps:[`Делим на x²`,`(3+2/x−1/x²)/(5−4/x²)→3/5`],ans:`3/5`}}
+],
+medium:[
+()=>{return{q:`lim(x→0) <b>sin(x)/x</b>`,steps:[`Первый замечательный предел`,`lim(x→0) sin(x)/x = 1`],ans:`1`}},
+()=>{const n=R(2,5);return{q:`lim(x→∞) <b>(1+${n}/x)^x</b>`,steps:[`2-й замечательный предел: lim(1+k/x)^x=eᵏ`,`k=${n} → e^${n}`],ans:`e^${n}`}},
+()=>{return{q:`lim(x→0) <b>(eˣ−1)/x</b>`,steps:[`Замечательный предел`,`lim(x→0)(eˣ−1)/x=1`],ans:`1`}}
+],
+hard:[
+()=>{return{q:`lim(x→0) <b>(1−cos x)/x²</b>`,steps:[`Раскладываем: 1−cos x≈x²/2 при x→0`,`(x²/2)/x²=1/2`,`Или через правило Лопиталя дважды`],ans:`1/2`}},
+()=>{const n=R(2,4);return{q:`lim(x→∞) <b>x^${n}/eˣ</b>`,steps:[`Применяем правило Лопиталя ${n} раз`,`Числитель: степень понижается`,`Знаменатель eˣ растёт быстрее любой степени`,`Предел = 0`],ans:`0`}}
+]},
+
+// ── МАТРИЦЫ ──────────────────────────────────────────────────
+'Матрицы':{
+easy:[
+()=>{
+  const a=[[R(1,5),R(1,5)],[R(1,5),R(1,5)]];
+  const b=[[R(1,5),R(1,5)],[R(1,5),R(1,5)]];
+  const c=a.map((r,i)=>r.map((v,j)=>v+b[i][j]));
+  return{q:`A+B, где A=[[${a[0]}],[${a[1]}]], B=[[${b[0]}],[${b[1]}]]`,
+    steps:[`Складываем поэлементно`,`[[${c[0]}],[${c[1]}]]`],
+    ans:`[[${c[0][0]},${c[0][1]}],[${c[1][0]},${c[1][1]}]]`};
+},
+()=>{
+  const k=R(2,6),a=[[R(1,4),R(1,4)],[R(1,4),R(1,4)]];
+  const c=a.map(r=>r.map(v=>v*k));
+  return{q:`<b>${k}×A</b>, где A=[[${a[0]}],[${a[1]}]]`,
+    steps:[`Умножаем каждый элемент на ${k}`,`[[${c[0]}],[${c[1]}]]`],
+    ans:`[[${c[0][0]},${c[0][1]}],[${c[1][0]},${c[1][1]}]]`};
+}
+],
+medium:[
+()=>{
+  const a=[[R(1,4),R(1,4)],[R(1,4),R(1,4)]];
+  const b=[[R(1,4),R(1,4)],[R(1,4),R(1,4)]];
+  const c00=a[0][0]*b[0][0]+a[0][1]*b[1][0];
+  const c01=a[0][0]*b[0][1]+a[0][1]*b[1][1];
+  const c10=a[1][0]*b[0][0]+a[1][1]*b[1][0];
+  const c11=a[1][0]*b[0][1]+a[1][1]*b[1][1];
+  return{q:`A×B, A=[[${a[0][0]},${a[0][1]}],[${a[1][0]},${a[1][1]}]], B=[[${b[0][0]},${b[0][1]}],[${b[1][0]},${b[1][1]}]]`,
+    steps:[`c₁₁=${a[0][0]}×${b[0][0]}+${a[0][1]}×${b[1][0]}=${c00}`,
+           `c₁₂=${a[0][0]}×${b[0][1]}+${a[0][1]}×${b[1][1]}=${c01}`,
+           `c₂₁=${a[1][0]}×${b[0][0]}+${a[1][1]}×${b[1][0]}=${c10}`,
+           `c₂₂=${a[1][0]}×${b[0][1]}+${a[1][1]}×${b[1][1]}=${c11}`],
+    ans:`[[${c00},${c01}],[${c10},${c11}]]`};
+}
+],
+hard:[
+()=>{
+  const a=R(1,5),b=R(1,5),c=R(1,5),d=R(1,5);const det=a*d-b*c;
+  return{q:`Обратная матрица A⁻¹, где A=[[${a},${b}],[${c},${d}]]`,
+    steps:[`det(A)=${a}×${d}−${b}×${c}=${det}`,
+           det===0?'det=0, обратной нет':`A⁻¹=(1/${det})×[[${d},−${b}],[−${c},${a}]]`,
+           det!==0?`=[[${d/det},${-b/det}],[${-c/det},${a/det}]]`:''
+          ].filter(Boolean),
+    ans:det===0?'Вырождена':  `[[${d/det},${-b/det}],[${-c/det},${a/det}]]`};
+}
+]},
+
+// ── ОПРЕДЕЛИТЕЛИ ─────────────────────────────────────────────
+'Определители':{
+easy:[
+()=>{const a=R(1,7),b=R(1,7),c=R(1,7),d=R(1,7);return{q:`|${a} ${b}; ${c} ${d}|`,steps:[`det=ad−bc=${a}×${d}−${b}×${c}=${a*d}−${b*c}=${a*d-b*c}`],ans:`${a*d-b*c}`}}
+],
+medium:[
+()=>{
+  const m=()=>R(1,4);
+  const r=[m(),m(),m()],q=[m(),m(),m()],p=[m(),m(),m()];
+  const det=r[0]*(q[1]*p[2]-q[2]*p[1])-r[1]*(q[0]*p[2]-q[2]*p[0])+r[2]*(q[0]*p[1]-q[1]*p[0]);
+  return{q:`det 3×3: строки [${r}],[${q}],[${p}]`,
+    steps:[`Разложение по 1й строке`,
+           `M₁₁=${q[1]*p[2]-q[2]*p[1]}, M₁₂=${q[0]*p[2]-q[2]*p[0]}, M₁₃=${q[0]*p[1]-q[1]*p[0]}`,
+           `det=${r[0]}×${q[1]*p[2]-q[2]*p[1]}−${r[1]}×${q[0]*p[2]-q[2]*p[0]}+${r[2]}×${q[0]*p[1]-q[1]*p[0]}=${det}`],
+    ans:`${det}`};
+}
+],
+hard:[
+()=>{
+  const a=R(1,4),b=R(1,4),c=R(1,4);
+  return{q:`Докажите, что матрица вырождена: [[${a},${2*a}],[${b},${2*b}]]`,
+    steps:[`det=${a}×${2*b}−${2*a}×${b}`,`=${2*a*b}−${2*a*b}=0`,`det=0 → матрица вырождена ✓`],
+    ans:`det = 0, матрица вырождена`};
+}
+]},
+
+// ── СЛУ МЕТОД ГАУССА ─────────────────────────────────────────
+'СЛУ методом Гаусса':{
+easy:[
+()=>{
+  const x=R(1,5),y=R(1,5);
+  const a1=R(1,3),b1=R(1,3),c1=a1*x+b1*y;
+  const a2=R(1,3),b2=R(1,3),c2=a2*x+b2*y;
+  return{q:`Решите: ${a1}x+${b1}y=${c1}; ${a2}x+${b2}y=${c2}`,
+    steps:[`Расширенная матрица: [${a1} ${b1}|${c1}; ${a2} ${b2}|${c2}]`,
+           `Прямой ход Гаусса`,`Из нижней строки: y=${y}`,`x=${x}`],
+    ans:`x=${x}, y=${y}`};
+}
+],
+medium:[
+()=>{
+  const x=R(1,4),y=R(1,4),z=R(1,4);
+  return{q:`Решите СЛУ: x+y+z=${x+y+z}; x−y+z=${x-y+z}; x+y−z=${x+y-z}`,
+    steps:[`R2=R2−R1: −2y=−${2*y} → y=${y}`,
+           `R3=R3−R1: −2z=−${2*z} → z=${z}`,
+           `x=${x+y+z}−${y}−${z}=${x}`],
+    ans:`x=${x}, y=${y}, z=${z}`};
+}
+],
+hard:[
+()=>{
+  return{q:`Исследуйте: x+2y+z=1; 2x+4y+2z=2; 3x+6y+3z=3`,
+    steps:[`R2=R2−2R1: 0=0`,`R3=R3−3R1: 0=0`,
+           `1 уравнение с 3 неизвестными`,`Бесконечно много решений`,
+           `x=1−2y−z, y=t₁, z=t₂ (t∈ℝ)`],
+    ans:`Бесконечно много решений`};
+}
+]},
+
+// ── ЧИСЛОВЫЕ РЯДЫ ────────────────────────────────────────────
+'Числовые ряды':{
+easy:[
+()=>{const a=R(1,5),r=R(2,5);const s=(a*(r**5-1)/(r-1));return{q:`Сумма 5 членов ГП: b₁=${a}, q=${r}`,steps:[`S₅=b₁(q⁵−1)/(q−1)=${a}(${r**5}−1)/${r-1}=${s}`],ans:`${s}`}},
+()=>{const a=R(1,8),d=R(1,5);const s=5*(2*a+(5-1)*d)/2;return{q:`Сумма 5 членов АП: a₁=${a}, d=${d}`,steps:[`S₅=5/2×(2×${a}+4×${d})=5/2×${2*a+4*d}=${s}`],ans:`${s}`}}
+],
+medium:[
+()=>{return{q:`Сходимость ряда: Σ 1/n² (n=1..∞)`,steps:[`Ряд Дирихле, p=2>1 → сходится`,`Сумма = π²/6 ≈ 1.6449`],ans:`Сходится, Σ=π²/6`}},
+()=>{return{q:`Сходимость ряда: Σ 1/n (гармонический)`,steps:[`Ряд Дирихле, p=1 → расходится`,`Частичные суммы: 1, 3/2, 11/6, ... → ∞`],ans:`Расходится`}}
+],
+hard:[
+()=>{return{q:`Радиус сходимости: Σ n!×xⁿ`,steps:[`Признак Даламбера: |a_{n+1}/a_n|=(n+1)|x|→∞`,`Сходится только при x=0`,`R=0`],ans:`R=0`}},
+()=>{return{q:`Радиус сходимости: Σ xⁿ/n`,steps:[`|a_{n+1}/a_n|=|x|×n/(n+1)→|x|`,`Сходится при |x|<1`,`При x=−1: ряд Лейбница (сходится)`,`При x=1: гармонический (расходится)`],ans:`R=1, область [−1;1)`}}
+]}
+
+}; // END GEN
+
+// =============================================================
+//  НАВИГАЦИЯ
+// =============================================================
+const SCHOOL={
+  '5 класс':{sec:['Арифметика','Геометрия','Задачи'],top:{'Арифметика':['Дроби','Проценты','Натуральные числа'],'Геометрия':['Периметр и площадь'],'Задачи':['Задачи на движение','Задачи на работу']}},
+  '6 класс':{sec:['Арифметика','Геометрия','Задачи'],top:{'Арифметика':['Дроби','Проценты','Натуральные числа'],'Геометрия':['Периметр и площадь'],'Задачи':['Задачи на движение','Задачи на работу']}},
+  '7 класс':{sec:['Алгебра','Геометрия'],top:{'Алгебра':['Одночлены','Многочлены'],'Геометрия':['Теорема Пифагора','Периметр и площадь']}},
+  '8 класс':{sec:['Алгебра','Геометрия'],top:{'Алгебра':['Многочлены','Дискриминант'],'Геометрия':['Теорема Пифагора','Периметр и площадь']}},
+  '9 класс':{sec:['Алгебра','Геометрия'],top:{'Алгебра':['Дискриминант','Многочлены'],'Геометрия':['Теорема Пифагора']}},
+  '10 класс':{sec:['Тригонометрия','Анализ'],top:{'Тригонометрия':['Синус и косинус','Тригонометрические уравнения'],'Анализ':['Производная']}},
+  '11 класс':{sec:['Анализ','Тригонометрия'],top:{'Анализ':['Производная','Интеграл'],'Тригонометрия':['Синус и косинус','Тригонометрические уравнения']}}
+};
+const UNI={
+  '1 курс':{sec:['Мат. анализ','Линейная алгебра'],top:{'Мат. анализ':['Пределы'],'Линейная алгебра':['Матрицы','Определители','СЛУ методом Гаусса']}},
+  '2 курс':{sec:['Мат. анализ','Линейная алгебра'],top:{'Мат. анализ':['Интеграл','Пределы'],'Линейная алгебра':['Матрицы','Определители']}},
+  '3 курс':{sec:['Мат. анализ','Ряды'],top:{'Мат. анализ':['Пределы','Интеграл'],'Ряды':['Числовые ряды']}},
+  '4 курс':{sec:['Мат. анализ','Линейная алгебра','Ряды'],top:{'Мат. анализ':['Производная','Интеграл','Пределы'],'Линейная алгебра':['Матрицы','Определители','СЛУ методом Гаусса'],'Ряды':['Числовые ряды']}}
+};
+
+// =============================================================
+//  СОСТОЯНИЕ
+// =============================================================
+let ST={lvl:'school',grade:'5 класс',sec:null,topic:null,diff:'easy',cnt:5,gen:0};
+const getNav=()=>ST.lvl==='school'?SCHOOL:UNI;
+const e=s=>s.replace(/'/g,"\\'");
+
+// =============================================================
+//  RENDER HELPERS
+// =============================================================
+function renderGrades(){
+  document.getElementById('gradeChips').innerHTML=Object.keys(getNav()).map(g=>
+    `<button class="chip${g===ST.grade?' on':''}" onclick="selGrade('${e(g)}',this)">${g}</button>`).join('');
+}
+function selGrade(g,btn){
+  ST.grade=g;ST.sec=null;ST.topic=null;
+  document.querySelectorAll('#gradeChips .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  renderSecs();renderTopics();
+}
+function renderSecs(){
+  const d=getNav()[ST.grade];
+  document.getElementById('secChips').innerHTML=d.sec.map(s=>
+    `<button class="chip${s===ST.sec?' on':''}" onclick="selSec('${e(s)}',this)">${s}</button>`).join('');
+}
+function selSec(s,btn){
+  ST.sec=s;ST.topic=null;
+  document.querySelectorAll('#secChips .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  renderTopics();
+}
+function renderTopics(){
+  const d=getNav()[ST.grade];
+  const card=document.getElementById('topicCard');
+  if(!d||!ST.sec||!d.top[ST.sec]){card.style.display='none';return;}
+  card.style.display='block';
+  document.getElementById('topicPills').innerHTML=d.top[ST.sec].map(t=>
+    `<button class="pill${t===ST.topic?' on':''}" onclick="selTopic('${e(t)}',this)">${t}</button>`).join('');
+}
+function selTopic(t,btn){
+  ST.topic=t;
+  document.querySelectorAll('#topicPills .pill').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+}
+function setLvl(l,btn){
+  ST.lvl=l;ST.grade=l==='school'?'5 класс':'1 курс';ST.sec=null;ST.topic=null;
+  document.querySelectorAll('.tgl').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  document.getElementById('gradeLbl').textContent=l==='school'?'Класс':'Курс';
+  renderGrades();renderSecs();renderTopics();
+}
+function setDiff(d,btn){
+  ST.diff=d;document.querySelectorAll('.df').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+}
+function chCnt(d){
+  ST.cnt=Math.max(1,Math.min(20,ST.cnt+d));document.getElementById('cntVal').textContent=ST.cnt;
+}
+function showErr(msg){
+  const el=document.getElementById('erBox');el.textContent='⚠️ '+msg;el.style.display='block';
+  setTimeout(()=>el.style.display='none',4000);
+}
+
+// =============================================================
+//  ГЕНЕРАЦИЯ
+// =============================================================
+function genTask(topic,diff){
+  const pool=GEN[topic];
+  if(!pool)return null;
+  const arr=pool[diff]||pool.easy||[];
+  if(!arr.length)return null;
+  let t=null,tries=0;
+  while(!t&&tries<6){try{t=pick(arr)();}catch(e){tries++;}}
+  return t;
+}
+
+function generate(){
+  if(!ST.sec){showErr('Выберите раздел');return;}
+  if(!ST.topic){showErr('Выберите тему');return;}
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.textContent='⏳ Создаю...';
+  document.getElementById('erBox').style.display='none';
+  document.getElementById('results').innerHTML=Array.from({length:ST.cnt},(_,i)=>`
+    <div class="lcard">
+      <div class="spin"></div>
+      <div style="flex:1"><div class="ltxt">Генерирую задачу ${i+1}...</div>
+      <div class="lbar"><div class="lbfill"></div></div></div>
+    </div>`).join('');
+  setTimeout(()=>{
+    const tasks=Array.from({length:ST.cnt},()=>genTask(ST.topic,ST.diff)||{q:'Задача',steps:['Решите'],ans:'—'});
+    ST.gen+=ST.cnt;
+    document.getElementById('stGen').textContent=ST.gen;
+    renderRes(tasks);
+    btn.disabled=false;btn.textContent='✨ Создать задачи';
+  },350);
+}
+
+function renderRes(tasks){
+  const bm={easy:'be">🟢 Лёгкий',med:'bm">🟡 Средний',hard:'bh">🔴 Сложный'};
+  window._T=tasks;
+  document.getElementById('results').innerHTML=`
+    <div class="rhdr">
+      <span class="rtitle">${ST.topic}</span>
+      <div class="arow">
+        <button class="abtn" onclick="copyAll()">📋 Копировать</button>
+        <button class="abtn" onclick="window.print()">🖨 Печать</button>
+      </div>
+    </div>
+    ${tasks.map((t,i)=>`
+      <div class="tcard" style="animation-delay:${i*55}ms">
+        <div class="thdr"><span class="tnum">Задача ${i+1}</span><span class="tbadge ${bm[ST.diff]}</span></div>
+        <div class="ttxt">${t.q}</div>
+        <button class="stgl" onclick="togSol(${i},this)"><span>▶</span> Показать решение</button>
+        <div class="sbox" id="s${i}">
+          ${t.steps.map((st,si)=>`<div class="sstep"><b style="color:var(--ac3)">Шаг ${si+1}:</b> ${st}</div>`).join('')}
+          <div class="sans">✅ Ответ: <b>${t.ans}</b></div>
+        </div>
+      </div>`).join('')}`;
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function togSol(i,btn){
+  const o=document.getElementById('s'+i).classList.toggle('open');
+  btn.innerHTML=`<span>${o?'▼':'▶'}</span> ${o?'Скрыть':'Показать'} решение`;
+}
+function copyAll(){
+  if(!window._T)return;
+  const txt=window._T.map((t,i)=>`Задача ${i+1}\n${t.q.replace(/<[^>]+>/g,'')}\n\nРешение:\n${t.steps.join('\n')}\n\nОтвет: ${t.ans}`).join('\n\n'+'─'.repeat(40)+'\n\n');
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=document.querySelector('.abtn');const o=b.textContent;
+    b.textContent='✅ Скопировано!';setTimeout(()=>b.textContent=o,2000);
+  });
+}
+
+// =============================================================
+//  ИНИЦИАЛИЗАЦИЯ
+// =============================================================
+renderGrades();renderSecs();
+
+// Считаем базу
+let total=0;
+Object.values(GEN).forEach(g=>Object.values(g).forEach(p=>total+=p.length*40));
+document.getElementById('stTasks').textContent=total.toLocaleString()+'+';
+document.getElementById('stTopics').textContent=Object.keys(GEN).length;
+</script>
+</body>
+</html>
