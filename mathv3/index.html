@@ -138,8 +138,20 @@ body::after{content:'';position:fixed;bottom:-300px;right:-200px;width:600px;hei
   font-size:13px;line-height:1.85;color:var(--tx2);display:none;border-left:3px solid var(--ac)}
 .sbox.open{display:block;animation:fdIn .2s ease}
 @keyframes fdIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.sstep{margin-bottom:5px}
-.sans{margin-top:10px;padding-top:10px;border-top:1px solid var(--br);color:var(--ac3);font-weight:600}
+.sstep{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;padding:8px 10px;
+  background:rgba(124,110,247,.06);border-radius:8px;border:1px solid rgba(124,110,247,.08)}
+.sstep-num{min-width:22px;height:22px;background:var(--ac);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  color:#fff;flex-shrink:0;margin-top:1px;font-family:'Unbounded',sans-serif}
+.sstep-txt{flex:1;color:var(--tx)}
+.sresult{display:inline-block;background:rgba(124,110,247,.15);color:var(--ac3);
+  border-radius:5px;padding:1px 7px;font-family:monospace;font-size:12px;margin-left:4px}
+.sans{margin-top:12px;padding:12px 14px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(74,222,128,.10),rgba(74,222,128,.05));
+  border:1px solid rgba(74,222,128,.25);color:var(--grn);font-weight:700;font-size:14px;
+  display:flex;align-items:center;gap:8px}
+.shint{margin-top:8px;padding:8px 12px;background:rgba(96,165,250,.07);
+  border-radius:8px;border:1px solid rgba(96,165,250,.15);font-size:12px;color:var(--blu)}
 
 /* LOADER */
 .lcard{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);
@@ -1609,6 +1621,7 @@ function generate(){
 
 function renderRes(tasks){
   const bm={easy:'be">🟢 Лёгкий',med:'bm">🟡 Средний',hard:'bh">🔴 Сложный'};
+  const icons=['🔍','📐','⚙️','🧮','✏️','🔗','📊','💡','🎯','🔢'];
   window._T=tasks;
   document.getElementById('results').innerHTML=`
     <div class="rhdr">
@@ -1620,12 +1633,23 @@ function renderRes(tasks){
     </div>
     ${tasks.map((t,i)=>`
       <div class="tcard" style="animation-delay:${i*55}ms">
-        <div class="thdr"><span class="tnum">Задача ${i+1}</span><span class="tbadge ${bm[ST.diff]}</span></div>
+        <div class="thdr">
+          <span class="tnum">Задача ${i+1}</span>
+          <span class="tbadge ${bm[ST.diff]}</span>
+        </div>
         <div class="ttxt">${t.q}</div>
-        <button class="stgl" onclick="togSol(${i},this)"><span>▶</span> Показать решение</button>
+        <button class="stgl" onclick="togSol(${i},this)">
+          <span>▶</span> Показать решение (${t.steps.length} шаг${t.steps.length===1?'':t.steps.length<5?'а':'ов'})
+        </button>
         <div class="sbox" id="s${i}">
-          ${t.steps.map((st,si)=>`<div class="sstep"><b style="color:var(--ac3)">Шаг ${si+1}:</b> ${st}</div>`).join('')}
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em;font-family:'Unbounded',sans-serif">📋 Пошаговое решение</div>
+          ${t.steps.map((st,si)=>`
+            <div class="sstep">
+              <div class="sstep-num">${si+1}</div>
+              <div class="sstep-txt"><b style="color:var(--ac2)">${icons[si%icons.length]} Шаг ${si+1}:</b> ${st}</div>
+            </div>`).join('')}
           <div class="sans">✅ Ответ: <b>${t.ans}</b></div>
+          ${t.hint?`<div class="shint">💡 Подсказка: ${t.hint}</div>`:''}
         </div>
       </div>`).join('')}`;
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
