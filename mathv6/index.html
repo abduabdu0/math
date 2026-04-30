@@ -2103,10 +2103,15 @@ let deferredPrompt;
 const installBtn = document.getElementById('install-btn');
 
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
+  // Не предотвращаем, чтобы браузер мог показать свой prompt
   deferredPrompt = e;
+  // Показываем кнопку как запасной вариант
   if (!localStorage.getItem('pwaInstalled')) {
-    installBtn.style.display = 'flex';
+    setTimeout(() => {
+      if (!localStorage.getItem('pwaInstalled')) {
+        installBtn.style.display = 'flex';
+      }
+    }, 5000); // Показать через 5 секунд, если браузер не показал
   }
 });
 
