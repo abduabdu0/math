@@ -12,7 +12,21 @@
 <meta name="apple-mobile-web-app-title" content="МатГен">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" href="icon-192.png">
-<link rel="stylesheet" href="styles.css"><style>
+<link rel="stylesheet" href="styles.css">
+<style>
+.install-banner{display:none;position:fixed;left:18px;right:18px;bottom:18px;padding:18px 20px;background:rgba(17,15,31,.96);border:1px solid rgba(124,110,247,.22);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.32);backdrop-filter:blur(16px);gap:16px;align-items:center;justify-content:space-between;z-index:1000;animation:slideUp .45s ease forwards}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.install-banner .install-label{display:flex;gap:14px;align-items:center;min-width:0;flex:1}
+.install-banner .install-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(124,110,247,.14);color:var(--ac3);font-size:20px;flex-shrink:0}
+.install-banner p{margin:0;font-size:15px;line-height:1.5;color:var(--tx);flex:1;min-width:0}
+.install-banner .install-actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.install-banner button{border:none;border-radius:16px;cursor:pointer;outline:none;font-family:'Unbounded',sans-serif;font-weight:700;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.install-banner button:hover{transform:translateY(-1px)}
+#installBtn{padding:12px 18px;background:linear-gradient(135deg,#7c6ef7,#a78bfa);color:#fff;box-shadow:0 18px 40px rgba(124,110,247,.18)}
+#installBtn:hover{box-shadow:0 20px 48px rgba(124,110,247,.24)}
+.text-button{padding:12px 16px;background:rgba(255,255,255,.08);color:var(--tx2);border:1px solid rgba(255,255,255,.12)}
+.text-button:hover{color:var(--tx);background:rgba(255,255,255,.12)}
+
 :root{
   --bg:#0a0812;--s1:#110f1f;--s2:#181530;--s3:#201d3a;
   --ac:#7c6ef7;--ac2:#a78bfa;--ac3:#c4b5fd;
@@ -286,9 +300,14 @@ body.light{--bg:#f4f3ff;--s1:#ffffff;--s2:#eeedf9;--s3:#e0dff5;
 <body>
   <button class="theme-btn" onclick="toggleTheme()" title="Сменить тему">☀️</button>
   <div class="install-banner" id="installBanner">
-  <p>Нажмите «Установить», чтобы добавить приложение на главный экран.</p>
-  <button id="installBtn">Установить</button>
-  <button id="closeInstallBtn" class="text-button">Закрыть</button>
+    <div class="install-label">
+      <span class="install-icon">📲</span>
+      <p>Добавьте МатГен на главный экран — быстрое открытие и удобный доступ без переключения вкладок.</p>
+    </div>
+    <div class="install-actions">
+      <button id="installBtn">Установить</button>
+      <button id="closeInstallBtn" class="text-button">Закрыть</button>
+    </div>
   </div>
 <div class="app">
 
