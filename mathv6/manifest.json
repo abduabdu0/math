@@ -1,6 +1,6 @@
 {
   "name": "МатГен — Генератор Задач",
-  "short_name": "Задачи",
+  "short_name": "Конструктор задач",
   "description": "Генератор математических задач для учителей",
   "start_url": "./index.html",
   "display": "standalone",
