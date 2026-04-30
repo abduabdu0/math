@@ -1,10 +1,11 @@
-const CACHE='matgen-v2';
+const CACHE='matgen-v3';
 const FILES=[
   './',
   './index.html',
   './manifest.json',
   './sw.js',
-  './icon.jpeg',
+  './icon-192.png',
+  './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap'
 ];
 

@@ -1,23 +1,16 @@
 {
   "name": "МатГен — Генератор Задач",
   "short_name": "Конструктор задач",
-  "description": "Генератор математических задач для учителей",
-  "start_url": "/index.html",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0812",
   "theme_color": "#7c6ef7",
-  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon.jpeg",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
-    },
-    {
-      "src": "icon.jpeg",
-      "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
