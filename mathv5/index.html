@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МатГен — Генератор Задач</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c6ef7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="МатГен">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  
+</style>
+</head>
+<body>
+  <button class="theme-btn" onclick="toggleThemePicker()" title="Сменить тему">🎨</button>
+  <div class="theme-picker" id="themePicker">
+  <div class="theme-dot-row">
+    <div>
+      <div class="theme-dot on" id="dot-purple" style="background:linear-gradient(135deg,#7c6ef7,#a78bfa)"
+        onclick="setTheme('purple')" title="Фиолетовая"></div>
+      <div class="theme-dot-lbl">По умолч.</div>
+    </div>
+    <div>
+      <div class="theme-dot" id="dot-blue" style="background:linear-gradient(135deg,#3b82f6,#60a5fa)"
+        onclick="setTheme('blue')" title="Синяя"></div>
+      <div class="theme-dot-lbl">Синяя</div>
+    </div>
+    <div>
+      <div class="theme-dot" id="dot-green" style="background:linear-gradient(135deg,#22c55e,#4ade80)"
+        onclick="setTheme('green')" title="Зелёная"></div>
+      <div class="theme-dot-lbl">Зелёная</div>
+    </div>
+    <div>
+      <div class="theme-dot" id="dot-dark" style="background:linear-gradient(135deg,#a855f7,#c084fc)"
+        onclick="setTheme('dark')" title="Тёмная"></div>
+      <div class="theme-dot-lbl">Тёмная</div>
+    </div>
+    <div>
+      <div class="theme-dot" id="dot-light" style="background:linear-gradient(135deg,#c4b5fd,#ede9fe)"
+        onclick="setTheme('light')" title="Светлая"></div>
+      <div class="theme-dot-lbl">Светлая</div>
+    </div>
+  </div>
+</div>
+
+<div class="hotkeys-hint" id="hotkeysHint">
+  <div style="font-weight:700;color:var(--tx2);margin-bottom:8px;font-size:12px">⌨️ Горячие клавиши</div>
+  <div class="hk-row"><span class="hk-key">Space</span><span class="hk-lbl">Создать задачи</span></div>
+  <div class="hk-row"><span class="hk-key">P</span><span class="hk-lbl">Печать</span></div>
+  <div class="hk-row"><span class="hk-key">S</span><span class="hk-lbl">Сохранить</span></div>
+  <div class="hk-row"><span class="hk-key">A</span><span class="hk-lbl">Все ответы</span></div>
+  <div class="hk-row"><span class="hk-key">R</span><span class="hk-lbl">Перемешать</span></div>
+  <div class="hk-row"><span class="hk-key">F</span><span class="hk-lbl">Полный экран</span></div>
+  <div class="hk-row"><span class="hk-key">Esc</span><span class="hk-lbl">Закрыть</span></div>
+</div>
+  <button class="fs-btn" onclick="openFullscreen()" title="Полноэкранный режим">⛶</button>
+<div class="app">
+
+<div class="hdr">
+  <span class="hdr-icon">📐</span>
+  <h1>Генератор математических задач</h1>
+  <p>Тысячи уникальных задач с пошаговыми решениями — без интернета</p>
+</div>
+
+<div class="stats">
+  <div class="st"><span class="st-n" id="stTasks">0</span><span class="st-l">задач в базе</span></div>
+  <div class="st"><span class="st-n" id="stTopics">0</span><span class="st-l">тем</span></div>
+  <div class="st"><span class="st-n" id="stGen">0</span><span class="st-l">сгенерировано</span></div>
+</div>
+
+<div class="card">
+  <div class="clbl">Уровень образования</div>
+  <div class="tgl-row">
+    <button class="tgl on" onclick="setLvl('school',this)">🏫 Школа</button>
+    <button class="tgl" onclick="setLvl('uni',this)">🎓 Университет</button>
+  </div>
+</div>
+<div class="card" style="margin-bottom:.5rem">
+  <div class="clbl">🔍 Поиск темы</div>
+  <div class="srch-wrap">
+    <span class="srch-ico">🔍</span>
+    <input class="srch-inp" id="searchInp" placeholder="Например: дроби, логарифм, матрица...">
+    <div class="srch-res" id="searchRes"></div>
+  </div>
+</div>
+<div class="card">
+  <div class="clbl" id="gradeLbl">Класс</div>
+  <div class="cgrid" id="gradeChips"></div>
+</div>
+
+<div class="card">
+  <div class="clbl">Раздел математики</div>
+  <div class="cgrid" id="secChips"></div>
+</div>
+
+<div class="card" id="topicCard" style="display:none">
+  <div class="clbl">Тема</div>
+  <div class="pills" id="topicPills"></div>
+</div>
+
+<div class="card">
+  <div class="font-row">
+  
+</div>
+  <div class="clbl">Тип работы</div>
+<div class="workcat-row">
+  <button class="wcat on" onclick="setWorkCat('homework',this)">
+    <span class="wcat-icon">📚</span>Домашнее задание
+  </button>
+  <button class="wcat" onclick="setWorkCat('classwork',this)">
+    <span class="wcat-icon">📝</span>Самостоятельная
+  </button>
+  <button class="wcat" onclick="setWorkCat('test',this)">
+    <span class="wcat-icon">📋</span>Контрольная работа
+  </button>
+  <button class="wcat" onclick="setWorkCat('olympiad',this)">
+    <span class="wcat-icon">🏆</span>Олимпиада
+  </button>
+</div>
+  <div class="clbl">Количество вариантов</div>
+<div class="var-row">
+  <button class="var-btn on" onclick="setVariants(1,this)">1 вариант</button>
+  <button class="var-btn" onclick="setVariants(2,this)">2 варианта</button>
+  <button class="var-btn" onclick="setVariants(3,this)">3 варианта</button>
+  <button class="var-btn" onclick="setVariants(4,this)">4 варианта</button>
+</div>
+<div class="noanswer-toggle" onclick="toggleNoAnswer()">
+  <div class="tog-switch" id="noAnsSw"><div class="tog-knob"></div></div>
+  <span class="tog-label" id="noAnsLbl">Режим: с ответами (для учителя)</span>
+</div>
+  <div class="clbl">Сложность</div>
+  <div class="dfrow">
+    <button class="df easy on" onclick="setDiff('easy',this)">🟢 Лёгкий</button>
+    <button class="df med" onclick="setDiff('med',this)">🟡 Средний</button>
+    <button class="df hard" onclick="setDiff('hard',this)">🔴 Сложный</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="clbl">Количество задач</div>
+  <div class="ctr">
+    <button class="cb" onclick="chCnt(-1)">−</button>
+    <span class="cv" id="cntVal">5</span>
+    <button class="cb" onclick="chCnt(1)">+</button>
+    <span class="cdesc">задач будет создано</span>
+  </div>
+</div>
+
+<div class="erbox" id="erBox"></div>
+<button class="gbtn" id="genBtn" onclick="generateVariants()">✨ Создать задачи</button>
+<div class="constructor-panel">
+  <div class="constructor-hdr" onclick="toggleConstructor()">
+    <span class="hist-hdr-txt">✏️ Конструктор своих задач</span>
+    <span id="constrArrow" style="color:var(--tx3);font-size:12px">▼</span>
+  </div>
+  <div class="constructor-body" id="constrBody">
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:10px">Создайте свою задачу — она сохранится в историю</div>
+    <input class="cinp" id="cInpQ" placeholder="Текст задачи...">
+    <div class="step-list" id="stepList">
+      <div class="step-row">
+        <input placeholder="Шаг 1 решения...">
+        <button class="step-del" onclick="delStep(this)">✕</button>
+      </div>
+    </div>
+    <button class="cadd-step" onclick="addStep()">+ Добавить шаг</button>
+    <input class="cinp" id="cInpAns" placeholder="Ответ...">
+    <input class="cinp" id="cInpTopic" placeholder="Тема (например: Дроби)">
+    <div style="margin-bottom:8px">
+      <label class="img-upload-label" style="border-radius:var(--rsm)">
+        <span>🖼</span>
+        <span id="cImgTxt">Прикрепить картинку (необязательно)</span>
+        <input class="img-upload-inp" type="file" accept="image/*" id="cImgInp" onchange="handleConstructorImg(this)">
+      </label>
+      <div id="cImgPreview"></div>
+    </div>
+    <button class="csave-btn" onclick="saveCustomTask()">💾 Сохранить задачу</button>
+  </div>
+</div>
+<div class="hist-panel">
+  <div class="hist-hdr" onclick="toggleHistory()">
+    <span class="hist-hdr-txt">📁 История сохранений</span>
+    <span id="histArrow" style="color:var(--tx3);font-size:12px">▼</span>
+  </div>
+  <div id="histList" style="display:none"></div>
+</div>
+<div class="card">
+  <div class="clbl">🖼 Добавить картинку к задачам</div>
+  <label class="img-upload-label">
+    <span style="font-size:20px">📁</span>
+    <span id="imgUploadTxt">Выбрать изображение (схема, график, таблица)</span>
+    <input class="img-upload-inp" type="file" accept="image/*" id="taskImgInp" onchange="handleTaskImg(this)">
+  </label>
+  <div id="taskImgPreview"></div>
+</div>
+<div class="card">
+  <div class="clbl">📝 Заметка к следующему сохранению</div>
+  <textarea class="comment-inp" id="saveComment" placeholder="Например: 8В, контрольная 20 мая, тема слабо усвоена..."></textarea>
+</div>
+<div id="results"></div>
+
+</div>
+<div class="stat-panel">
+  <div class="stat-hdr" onclick="toggleStat()">
+    <span class="hist-hdr-txt">📊 Статистика использования</span>
+    <span id="statArrow" style="color:var(--tx3);font-size:12px">▼</span>
+  </div>
+  <div class="stat-body" id="statBody">
+    <div class="stat-grid">
+      <div class="stat-box">
+        <span class="stat-box-n" id="statTotal">0</span>
+        <div class="stat-box-l">Всего задач создано</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-box-n" id="statSessions">0</span>
+        <div class="stat-box-l">Сессий генерации</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-box-n" id="statTopicCount">0</span>
+        <div class="stat-box-l">Уникальных тем</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-box-n" id="statFavCount">0</span>
+        <div class="stat-box-l">В избранном</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Топ тем</div>
+    <div class="stat-topic-list" id="statTopicList"></div>
+    <div style="margin-top:12px;font-size:11px;color:var(--tx3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">По сложности</div>
+    <div id="statDiffBars"></div>
+    <button class="stat-reset" onclick="resetStat()">🗑 Сбросить статистику</button>
+  </div>
+</div>
+<script>
+
+</script>
+<div class="fullscreen-overlay" id="fsOverlay">
+  <button class="fs-close" onclick="closeFullscreen()" title="Закрыть">✕</button>
+  <div class="fs-content" id="fsContent"></div>
+</div>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(()=>console.log('SW зарегистрирован'))
+      .catch(e=>console.log('SW ошибка:',e));
+  });
+}
+</script>
+<script src="script.js"></script>
+</body>
+</html>
