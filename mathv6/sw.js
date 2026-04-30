@@ -1,7 +1,10 @@
-    const CACHE='matgen-v1';
+const CACHE='matgen-v2';
 const FILES=[
   './',
   './index.html',
+  './manifest.json',
+  './sw.js',
+  './icon.jpeg',
   'https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600&display=swap'
 ];
 
@@ -30,7 +33,7 @@ self.addEventListener('fetch',e=>{
         const clone=resp.clone();
         caches.open(CACHE).then(c=>c.put(e.request,clone));
         return resp;
-      }).catch(()=>caches.match('./index_2_.html'));
+      }).catch(()=>caches.match('index.html'));
     })
   );
 }); 
